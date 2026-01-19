@@ -76,7 +76,7 @@ if __name__ == "__main__":
   from PlotContext import PlotContext
   from tkiter_widgets import IntSlider, FloatSlider
 
-  wid_args = {"th1":23,"ph1":42,"th2":2,"ph2":22,"amt":0}
+  wid_args = {"th1":0,"ph1":0,"th2":0,"ph2":90,"amt":0.0}
   base_circ = np.array([[cos(a),sin(a),0] for a in np.linspace(0,tau,360)])
   pctx = PlotContext("SU(2) operations demo",proj="3d")
 
@@ -85,26 +85,28 @@ if __name__ == "__main__":
   def plot_demo():
     th1,ph1 = np.deg2rad(float(wid_args["th1"])), np.deg2rad(float(wid_args["ph1"]))
     th2,ph2 = np.deg2rad(float(wid_args["th2"])), np.deg2rad(float(wid_args["ph2"]))
-    amt = tau * wid_args["amt"]
-    circ1 = rotate_points(base_circ,th1,ph1,tau)
+    amt = pi * wid_args["amt"]
+    circ1 = rotate_points(base_circ,th1,ph1,pi)
     circ2 = rotate_points(circ1,th2,ph2,amt)
     from_marker = sphere_to_cart([1,th1,ph1])
     to_marker = sphere_to_cart([1,th2,ph2])
     pctx.clear()
     pctx.plot_marker(from_marker,10,"red")
     pctx.plot_marker(to_marker,10,"blue")
-    pctx.plot_pointlist(circ1,"red",0.2)
-    pctx.plot_pointlist(circ2, "blue", 0.2)
+    pctx.plot_pointlist(circ1,"red",0.3)
+    pctx.plot_pointlist(circ2, "blue", 0.3)
+    #pctx.plot_pointlist(base_circ,"black",0.3)
 
   def wid_change(_id,val):
       wid_args[_id] = val
       plot_demo()
 
-  from_theta_slider = IntSlider(pctx,"th1","from_theta",0,359,23,wid_change)
-  from_phi_slider = IntSlider(pctx,"ph1","from_phi",0,359,23,wid_change)
-  to_theta_slider = IntSlider(pctx,"th2","to_theta",0,359,23,wid_change)
-  to_phi_slider = IntSlider(pctx,"ph2","to_phi",0,359,23,wid_change)
+  from_theta_slider = IntSlider(pctx,"th1","from_theta",-180,180,0,wid_change)
+  from_phi_slider = IntSlider(pctx,"ph1","from_phi",-90,90,0,wid_change)
+  to_theta_slider = IntSlider(pctx,"th2","to_theta",-180,180,0,wid_change)
+  to_phi_slider = IntSlider(pctx,"ph2","to_phi",-90,90,90,wid_change)
   amt_slider = FloatSlider(pctx,"amt","amount",0.0,1.0,0.0,wid_change)
+  plot_demo()
   pctx.run()
 
 
