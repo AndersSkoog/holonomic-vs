@@ -1,6 +1,4 @@
 import numpy as np
-from utils import sphere_to_cart,normalize_vector
-
 """
 One construction of elements in SU(2):
 An element of SU(2) is a distance traveled from the identity by an amount (a) in a direction specified 
@@ -8,17 +6,32 @@ by the cartesian conversion of a point on S² (r,theta,phi).
 """
 
 #pauli matrices
-c0 = complex(0,0)
-c1 = complex(1,0)
 o1 = np.array([[0,1],[1,0]], dtype=complex)
 o2 = np.array([[0,-1j],[1j,0]], dtype=complex)
 o3 = np.array([[1,0],[0,-1]], dtype=complex)
+#Identy in SU(2)
 I = np.eye(2, dtype=complex)
+
+#-------------------- Helper Functions---------------------------------
+def sphere_to_cart(c):
+  r,theta,phi = c
+  x = r * np.sin(phi) * np.cos(theta)
+  y = r * np.sin(phi) * np.sin(theta)
+  z = r * np.cos(phi)
+  return np.array([x,y,z])
+
+def normalize_vector(vec):
+  vec = np.array(vec)
+  n = np.linalg.norm(vec)
+  if n == 0: return vec
+  return vec / n
 
 def is_SU2(U, tol=1e-9):
   a, b = U.item(0), U.item(1)
   res = pow(abs(a), 2) + pow(abs(b), 2)
   return np.isclose(res,1.0,atol=tol) and np.isclose(np.linalg.det(U), 1.0, atol=tol)
+
+#-------------------------------------------Implementation-------------------------------------------
 
 def SU2(axis,angle):
   nx,ny,nz = axis
