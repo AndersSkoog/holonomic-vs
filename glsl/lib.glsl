@@ -54,6 +54,26 @@ struct sphere_pt {
     float phi;
 };
 
+struct sphere_orient_3 {
+  vec3 center_coord;
+  vec3 r3_cord;
+  vec3 s2_cord;
+  vec3 radial_dir;
+  vec3 cube_verts[8];
+  cplx slope;
+  mat3 rot_mtx;
+  mat3 xy_plane;
+  mat3 xz_plane;
+  mat3 yz_plane;
+  cplx
+
+};
+
+
+
+
+
+
 
 
 
@@ -79,11 +99,9 @@ persp perspective(vec3 pos, vec3 target){
     ret.down = -up;
     ret.pos = pos;
     ret.target = target;
-
-    return ret;   // FIXED — original code incorrectly returned "target"
+    return ret;
 }
 
-// FIXED — type error (struct values must match)
 cplx2 c2_make(cplx z1, cplx z2){
     cplx2 ret;
     ret.z1 = z1;
