@@ -12,7 +12,7 @@ def detect_shape(data):
     raise ValueError(f"Cannot interpret shape {shape}")
 
 class PlotContext:
-    def __init__(self, title="Plot", figsize=(1, 1), proj="2d"):
+    def __init__(self, dmin,dmax,title="plot",proj="2d"):
         assert proj == "2d" or "3d", "not valid projection argument"
         self.proj = proj
         self.root = tk.Tk()
@@ -27,9 +27,16 @@ class PlotContext:
         self.ax = None
         if proj == "2d":
             self.fig, self.ax = plt.subplots()
+            self.ax.xlim(dmin, dmax)
+            self.ax.ylim(dmin, dmax)
+            self.ax.set_autoscale_on(False)
         else:
             self.fig = plt.figure()
             self.ax = self.fig.add_subplot(1,1,1,projection="3d")
+            self.ax.set_xlim(dmin, dmax)
+            self.ax.set_ylim(dmin, dmax)
+            self.ax.set_zlim(dmin, dmax)
+            self.ax.set_autoscale_on(False)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=False)
 
