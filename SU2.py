@@ -1,5 +1,7 @@
 import numpy as np
+import cmath
 from math import sin, cos, pi, tau
+from plane_torision import torsion_angle
 """
 One construction of elements in SU(2):
 An element of SU(2) is a distance traveled from the identity by an amount (a) in a direction specified 
@@ -18,6 +20,27 @@ def normalize_vector(vec):
   n = np.linalg.norm(vec)
   if n == 0: return vec
   return vec / n
+
+def canonical_fiber(num=360):
+  ts = np.linspace(0, tau, num)
+  return np.array([
+      [cmath.exp(1j*t), 0]
+      for t in ts
+  ])
+
+"""stereographic project point in the plane to a point on the sphere centered at [0,0,r]"""
+def plane_to_sphere(p, r):
+  X, Y = p[0],p[1]
+  X2, Y2 = pow(X,2),pow(Y,2)
+  r2 = pow(r,2)
+  denom = X2 + Y2 + r2
+  x = (2 * r2 * X) / denom
+  y = (2 * r2 * Y) / denom
+  z = r * (X2 + Y2 - r2) / denom + r  # center shift up by r
+  return [x, y, z]
+
+
+
 #-------------------------------------------Implementation-------------------------------------------
 #pauli matrices
 o1 = np.array([[0,1],[1,0]], dtype=complex)
@@ -25,6 +48,11 @@ o2 = np.array([[0,-1j],[1j,0]], dtype=complex)
 o3 = np.array([[1,0],[0,-1]], dtype=complex)
 #Identy in SU(2)
 I = np.eye(2, dtype=complex)
+#angles
+angles = np.linspace(0,tau,360)
+#base circle
+base_circle = np.array([[cos(a),sin(a),0] for a in angles])
+base_fiber = canonical_fiber()
 
 def is_SU2(U, tol=1e-9):
   a, b = U.item(0), U.item(1)
@@ -38,17 +66,43 @@ def SU2(axis,angle):
   assert is_SU2(U), "error"
   return U
 
-def S2_to_SU2(sphere_pos,amt):
+def SU2_to_SO3(U):
+  """
+  Convert an SU(2) matrix into the corresponding SO(3) rotation matrix.
+  """
+  # Pauli matrices
+  pm = [o1,o2,o3]
+  #initialize rotation matrix
+  rot_mtx = np.zeros((3,3))
+  for i, si in enumerate(pm):
+      # conjugate action
+      X = U @ si @ U.conj().T
+      for j, sj in enumerate(pm):
+          # trace inner product
+          rot_mtx[j,i] = 0.5 * np.trace(X @ sj).real
+
+  return rot_mtx
+
+def SU2_from_r3_sphere_point(x,y,z):
+  #assert pont has normal local orientation, ref vector therefore to be the north pole.
+  axis = np.cross([0,0,1], [x,y,z])
+  n = np.linalg.norm(axis)
+  if n < 1e-9:return I  # already north pole
+  axis /= n
+  angle = np.arccos(z)
+  return SU2(axis, angle)
+
+def S2_to_SU2(sp,amt):
   assert 0.0 < amt <= 1.0, "amt must be a scalar between 0 and 1"
-  theta,phi = sphere_pos[1],sphere_pos[2]
+  #theta,phi = sphere_pos[1],sphere_pos[2]
   angle = pi * amt
-  rot_axis = normalize_vector(sphere_to_cart([1,theta,phi]))
+  rot_axis = normalize_vector(sphere_to_cart(sp))
   return SU2(rot_axis,angle)
 
 #return SU(2) element along a corresponding arc between two unit sphere coordinates
 def S2_arc_to_SU2(sp1,sp2,scalar,tol=1e-9):
-  u = normalize_vector(sphere_to_cart([1,sp1[1],sp1[2]]))
-  v = normalize_vector(sphere_to_cart([1,sp2[1],sp2[2]]))
+  u = normalize_vector(sphere_to_cart(sp1))
+  v = normalize_vector(sphere_to_cart(sp2))
   axis = np.cross(u, v)
   norm = np.linalg.norm(axis)
   if norm < tol:return None,0.0  # same or opposite direction
@@ -58,33 +112,16 @@ def S2_arc_to_SU2(sp1,sp2,scalar,tol=1e-9):
 
 #rotate pts in R3 by an element in SU(2)
 def rotate_points(points,sphere_pos,amt):
-    """
-    rotate multiple 3D points using a single SU(2) element (vectorized).
-    points: Nx3 array
-    U: 2x2 SU(2) matrix
-    """
-    U = S2_to_SU2(sphere_pos,amt)
-    # Map 3D points to C^2
-    z1 = points[:, 0] + 1j * points[:, 1]  # x + i y
-    z2 = points[:, 2] + 0j  # z as real part
-    V = np.stack([z1, z2], axis=0)  # shape (2, N)
-    # Multiply by SU(2) element
-    V_rot = U @ V  # shape (2, N)
-    # Map back to 3D
-    rotated_points = np.stack([V_rot[0].real, V_rot[0].imag, V_rot[1].real], axis=1)
-    return rotated_points
+  U = S2_to_SU2(sphere_pos,amt)
+  RM = SU2_to_SO3(U)
+  return points @ RM.T
 
+#rotate pts in R3 along a spherical arc between two sphere points
 def rotate_points_arc(points,fp,tp,amt):
-    U = S2_arc_to_SU2(fp,tp,amt)
-    # Map 3D points to C^2
-    z1 = points[:, 0] + 1j * points[:, 1]  # x + i y
-    z2 = points[:, 2] + 0j  # z as real part
-    V = np.stack([z1, z2], axis=0)  # shape (2, N)
-    # Multiply by SU(2) element
-    V_rot = U @ V  # shape (2, N)
-    # Map back to 3D
-    rotated_points = np.stack([V_rot[0].real, V_rot[0].imag, V_rot[1].real], axis=1)
-    return rotated_points
+  U = S2_arc_to_SU2(fp,tp,amt)
+  RM = SU2_to_SO3(U)
+  return points @ RM.T
+
 
 
 # ----------------------DEMO------------------------------------------------------
@@ -93,7 +130,6 @@ if __name__ == "__main__":
     from tkiter_widgets import IntSlider, FloatSlider
 
     wid_args = {"th1":0.01,"ph1":0.01,"th2":0.01,"ph2":pi,"amt":0.0}
-    base_circ = np.array([[cos(a),sin(a),0] for a in np.linspace(0,tau,360)])
     pctx = PlotContext(-1,1,"SU(2) operations demo",proj="3d")
 
     from_pos = [1,wid_args["th1"],wid_args["ph1"]]
@@ -106,7 +142,7 @@ if __name__ == "__main__":
 
     def plot_demo():
       amt = pi * wid_args["amt"]
-      pts = rotate_points_arc(base_circ,from_pos,to_pos,amt)
+      pts = rotate_points_arc(base_circle,from_pos,to_pos,amt)
       pctx.clear()
       pctx.plot_marker(from_marker,10,"red")
       pctx.plot_marker(to_marker,10,"blue")
