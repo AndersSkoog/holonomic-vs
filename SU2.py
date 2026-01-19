@@ -43,8 +43,8 @@ def SU2(axis,angle):
 def S2_to_SU2(theta,phi,a): return SU2(normalize_vector(sphere_to_cart([1,theta,phi])),a)
 
 def rotation_from_to(sp1,sp2,scalar,tol=1e-9):
-    u = sphere_to_cart([1,sp1[1],sp1[2]],"rad")
-    v = sphere_to_cart([1,sp2[1],sp2[2]],"rad")
+    u = normalize_vector(sphere_to_cart([1,sp1[1],sp1[2]]))
+    v = normalize_vector(sphere_to_cart([1,sp2[1],sp2[2]]))
     axis = np.cross(u, v)
     norm = np.linalg.norm(axis)
     if norm < tol:return None,0.0  # same or opposite direction
