@@ -1,4 +1,5 @@
 import numpy as np
+from math import sin, cos, pi, tau
 """
 One construction of elements in SU(2):
 An element of SU(2) is a distance traveled from the identity by an amount (a) in a direction specified 
@@ -40,7 +41,7 @@ def SU2(axis,angle):
   assert is_SU2(U), "error"
   return U
 
-def S2_to_SU2(theta,phi,a): return SU2(normalize_vector(sphere_to_cart([1,theta,phi])),a)
+def S2_to_SU2(theta,phi,angle): return SU2(normalize_vector(sphere_to_cart([1,theta,phi])),angle)
 
 def rotation_from_to(sp1,sp2,scalar,tol=1e-9):
     u = normalize_vector(sphere_to_cart([1,sp1[1],sp1[2]]))
@@ -51,6 +52,71 @@ def rotation_from_to(sp1,sp2,scalar,tol=1e-9):
     axis /= norm
     angle = np.arccos(np.clip(np.dot(u, v), -1.0, 1.0))
     return SU2(axis,scalar*angle)
+
+#rotate pts in R3 by an element in SU(2)
+def rotate_points(points,theta,phi,amount):
+    """
+    rotate multiple 3D points using a single SU(2) element (vectorized).
+    points: Nx3 array
+    U: 2x2 SU(2) matrix
+    """
+    U = S2_to_SU2(theta,phi,amount)
+    # Map 3D points to C^2
+    z1 = points[:, 0] + 1j * points[:, 1]  # x + i y
+    z2 = points[:, 2] + 0j  # z as real part
+    V = np.stack([z1, z2], axis=0)  # shape (2, N)
+    # Multiply by SU(2) element
+    V_rot = U @ V  # shape (2, N)
+    # Map back to 3D
+    rotated_points = np.stack([V_rot[0].real, V_rot[0].imag, V_rot[1].real], axis=1)
+    return rotated_points
+
+
+if __name__ == "__main__":
+  from PlotContext import PlotContext
+  from tkiter_widgets import IntSlider, FloatSlider
+
+  wid_args = {"th1":23,"ph1":42,"th2":2,"ph2":22,"amt":0}
+  base_circ = np.array([[cos(a),sin(a),0] for a in np.linspace(0,tau,360)])
+  pctx = PlotContext("SU(2) operations demo",proj="3d")
+
+  print(float(wid_args["th1"]))
+
+  def plot_demo():
+    th1,ph1 = np.deg2rad(float(wid_args["th1"])), np.deg2rad(float(wid_args["ph1"]))
+    th2,ph2 = np.deg2rad(float(wid_args["th2"])), np.deg2rad(float(wid_args["ph2"]))
+    amt = tau * wid_args["amt"]
+    circ1 = rotate_points(base_circ,th1,ph1,tau)
+    circ2 = rotate_points(circ1,th2,ph2,amt)
+    from_marker = sphere_to_cart([1,th1,ph1])
+    to_marker = sphere_to_cart([1,th2,ph2])
+    pctx.clear()
+    pctx.plot_marker(from_marker,10,"red")
+    pctx.plot_marker(to_marker,10,"blue")
+    pctx.plot_pointlist(circ1,"red",0.2)
+    pctx.plot_pointlist(circ2, "blue", 0.2)
+
+  def wid_change(_id,val):
+      wid_args[_id] = val
+      plot_demo()
+
+  from_theta_slider = IntSlider(pctx,"th1","from_theta",0,359,23,wid_change)
+  from_phi_slider = IntSlider(pctx,"ph1","from_phi",0,359,23,wid_change)
+  to_theta_slider = IntSlider(pctx,"th2","to_theta",0,359,23,wid_change)
+  to_phi_slider = IntSlider(pctx,"ph2","to_phi",0,359,23,wid_change)
+  amt_slider = FloatSlider(pctx,"amt","amount",0.0,1.0,0.0,wid_change)
+  pctx.run()
+
+
+
+
+
+
+
+
+
+
+
 
 
 
