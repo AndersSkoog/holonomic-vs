@@ -3,7 +3,6 @@ import cmath
 from math import sin, cos, pi, tau
 from S2 import S2_to_R3, xy_circle
 from lib import normalize_vector, angles
-from hopf import base_fiber
 """
 One construction of elements in SU(2):
 An element of SU(2) is a distance traveled from the identity by an amount (a) in a direction specified 

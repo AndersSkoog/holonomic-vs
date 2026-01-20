@@ -1,6 +1,6 @@
 import numpy as np
 import cmath
-from math import tau,pi
+from math import tau,pi,sin,cos
 from SU2 import SU2_from_r3_sphere_point
 from plane_torision import torsion_angle
 from projection import plane_to_sphere
@@ -9,6 +9,23 @@ angles = np.linspace(0, tau, 360)
 def norm_s(z:complex) -> float: return abs(z) / np.sqrt(1.0 + pow(abs(z),2))
 def norm_c(z:complex) -> float: return 1.0 / np.sqrt(1.0 + pow(abs(z),2))
 
+# Build (z1,z2) for a Hopf coordinate (theta,phi,t)
+def hopf_zpair(theta: float, phi: float, t: float):
+    """
+    Returns complex pair (z1, z2) on S^3 corresponding to Hopf coords:
+      slope a = tan(phi/2) * e^{i theta}
+      z1 = c * e^{i t}
+      z2 = s * phase_a * e^{i t}
+    """
+    slope = cmath.exp(1j * theta) * np.tan(phi / 2.0)
+    mag = abs(slope)
+    s = mag / np.sqrt(1.0 + mag*mag)
+    c = 1.0 / np.sqrt(1.0 + mag*mag)
+    phase_a = slope / mag if mag != 0.0 else 1.0 + 0j
+    e_it = cmath.exp(1j * t)
+    z1 = c * e_it
+    z2 = s * phase_a * e_it
+    return z1, z2
 
 def s3_circle_pt(s2):
     """
@@ -50,52 +67,32 @@ def hopf_fiber_from_plane_curve_pt(curve_pts,index,R=1):
   fiber = twisted_fiber(U,ta)
   return (U @ fiber.T).T
 
-def torus_circle(c, s, u, v):
-  """
-  Vectorized torus stereographic projection.
-  u and v must broadcast to the same shape.
-  """
-  u = np.asarray(u)
-  v = np.asarray(v)
-  # denominator
-  d = (1 - s) * np.sin(v)
-  d = np.where(np.abs(d) < 1e-9, np.sign(d) * 1e-9, d)
-  x = (c * np.cos(u)) / d
-  y = (c * np.sin(u)) / d
-  z = (s * np.cos(v)) / d
-  return np.stack((x, y, z), axis=-1)
+def torus_pt(c, s, u, v, d):
+  x = (c * cos(u)) / d
+  y = (c * sin(u)) / d
+  z = (s * cos(v)) / d
+  print(x)
+  print(y)
+  print(z)
+  return np.array([x,y,z],dtype=float)
 
 
-def torus_circles_from_plane_curve_point(curve_pts,index,alpha,R=1):
-  fiber = hopf_fiber_from_plane_curve_pt(curve_pts,index,R)
-  # Torus radii (constant along the fiber)
-  z1, z2 = fiber[0]
+def torus_circles_from_plane_pt(p,R=1):
+  s2 = plane_to_sphere(p,R)
+  z1,z2 = s3_circle_pt(s2)
   c, s = abs(z1), abs(z2)
-  u = angles
+  u, v = cmath.phase(z1),cmath.phase(z2)
+  d = (1 - s) * np.sin(v)
+  print(d)
+  if np.isclose(d,0,1e-9): d = np.sign(d) * 1e-9
+  print(d)
+  ts = angles
+  alpha = np.zeros(360)
   #meridian torus circle
-  mr_circ   = torus_circle(c, s, alpha, u)
-  #paralell torus circle
-  pr_circ   = torus_circle(c, s, u, alpha)
-  #villarceau torus circle
-  vil_circ  = torus_circle(c, s, u, u + alpha)
-  #mirrored villarceau torus circle
-  vil_circ2 = torus_circle(c, s, u, -u + alpha)
-  return [mr_circ, pr_circ, vil_circ, vil_circ2]
+  mer_circ = [torus_pt(c, s, u, t, d) for t in ts]
+  par_circ = [torus_pt(c, s, t, v, d) for t in ts]
+  vil2_circ = [torus_pt(c, s, t, -t + alpha,d) for t in ts]
+  vil_circ = [torus_pt(c, s, t, t + alpha,d) for t in ts]
+  return [mer_circ, par_circ, vil_circ, vil2_circ]
 
-# Build (z1,z2) for a Hopf coordinate (theta,phi,t)
-def hopf_zpair(theta: float, phi: float, t: float):
-    """
-    Returns complex pair (z1, z2) on S^3 corresponding to Hopf coords:
-      slope a = tan(phi/2) * e^{i theta}
-      z1 = c * e^{i t}
-      z2 = s * phase_a * e^{i t}
-    """
-    slope = cmath.exp(1j * theta) * np.tan(phi / 2.0)
-    mag = abs(slope)
-    s = mag / np.sqrt(1.0 + mag*mag)
-    c = 1.0 / np.sqrt(1.0 + mag*mag)
-    phase_a = slope / mag if mag != 0.0 else 1.0 + 0j
-    e_it = cmath.exp(1j * t)
-    z1 = c * e_it
-    z2 = s * phase_a * e_it
-    return z1, z2
+
