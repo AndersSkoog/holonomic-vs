@@ -6,6 +6,13 @@ xy_circle = np.array([[np.cos(a),np.sin(a),0.0] for a in angles])
 yz_circle = np.array([[0.0,np.cos(a),np.sin(a)] for a in angles])
 xz_circle = np.array([[np.cos(a),0.0,np.sin(a)] for a in angles])
 
+def R3_to_S2(r3,r=1):
+  x,y,z = r3
+  r = r if r==1 else np.sqrt(x * x + y * y + z * z)
+  theta = np.arctan2(y,x)  # longitude
+  phi = np.sign(y)*np.arccos(z / r)  # colatitude
+  return [r,theta,phi]
+
 #convert to a spherical coordinate to cartesian coordinate
 def S2_to_R3(sc):
   r,theta,phi = sc

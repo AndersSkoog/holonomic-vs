@@ -61,13 +61,13 @@ def S2_to_SU2(sp,amt):
   assert 0.0 < amt <= 1.0, "amt must be a scalar between 0 and 1"
   #theta,phi = sphere_pos[1],sphere_pos[2]
   angle = pi * amt
-  rot_axis = normalize_vector(sphere_to_cart(sp))
+  rot_axis = normalize_vector(S2_to_R3(sp))
   return SU2(rot_axis,angle)
 
 #return SU(2) element along a corresponding arc between two unit sphere coordinates
 def S2_arc_to_SU2(sp1,sp2,scalar,tol=1e-9):
-  u = normalize_vector(sphere_to_cart(sp1))
-  v = normalize_vector(sphere_to_cart(sp2))
+  u = normalize_vector(S2_to_R3(sp1))
+  v = normalize_vector(S2_to_R3(sp2))
   axis = np.cross(u, v)
   norm = np.linalg.norm(axis)
   if norm < tol:return None,0.0  # same or opposite direction
@@ -99,8 +99,8 @@ if __name__ == "__main__":
 
     from_pos = [1,wid_args["th1"],wid_args["ph1"]]
     to_pos = [1,wid_args["th2"],wid_args["ph2"]]
-    from_marker = sphere_to_cart(from_pos)
-    to_marker = sphere_to_cart(to_pos)
+    from_marker = S2_to_R3(from_pos)
+    to_marker = S2_to_R3(to_pos)
     #start_pts = rotate_points(base_circ,from_pos,1.0)
 
     def plot_demo():
@@ -117,11 +117,11 @@ if __name__ == "__main__":
         global from_pos, to_pos, from_marker, to_marker
         if _id in ("th1","ph1"):
           from_pos = [1,wid_args["th1"],wid_args["ph1"]]
-          from_marker = sphere_to_cart(from_pos)
+          from_marker = S2_to_R3(from_pos)
           #start_pts = rotate_points(base_circ,from_pos,1.0)
         if _id in ("th2","ph2"):
           to_pos = [1,wid_args["th2"],wid_args["ph2"]]
-          to_marker = sphere_to_cart(to_pos)
+          to_marker = S2_to_R3(to_pos)
 
         plot_demo()
 
