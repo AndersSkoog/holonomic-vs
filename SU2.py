@@ -2,12 +2,14 @@ import numpy as np
 import cmath
 from math import sin, cos, pi, tau
 from plane_torision import torsion_angle
+from projection import plane_to_sphere
 """
 One construction of elements in SU(2):
 An element of SU(2) is a distance traveled from the identity by an amount (a) in a direction specified 
 by the cartesian conversion of a point on S² (r,theta,phi).
 """
 #-------------------- Helper Functions---------------------------------
+#convert to a spherical coordinate to cartesian coordinate
 def sphere_to_cart(c):
   r,theta,phi = c
   x = r * np.sin(phi) * np.cos(theta)
@@ -21,32 +23,12 @@ def normalize_vector(vec):
   if n == 0: return vec
   return vec / n
 
-def canonical_fiber(num=360):
-  ts = np.linspace(0, tau, num)
-  return np.array([
-      [cmath.exp(1j*t), 0]
-      for t in ts
-  ])
-
-"""stereographic project point in the plane to a point on the sphere centered at [0,0,r]"""
-def plane_to_sphere(p, r):
-  X, Y = p[0],p[1]
-  X2, Y2 = pow(X,2),pow(Y,2)
-  r2 = pow(r,2)
-  denom = X2 + Y2 + r2
-  x = (2 * r2 * X) / denom
-  y = (2 * r2 * Y) / denom
-  z = r * (X2 + Y2 - r2) / denom + r  # center shift up by r
-  return [x, y, z]
-
-
-
 #-------------------------------------------Implementation-------------------------------------------
 #pauli matrices
 o1 = np.array([[0,1],[1,0]], dtype=complex)
 o2 = np.array([[0,-1j],[1j,0]], dtype=complex)
 o3 = np.array([[1,0],[0,-1]], dtype=complex)
-#Identy in SU(2)
+#Identity in SU(2)
 I = np.eye(2, dtype=complex)
 #angles
 angles = np.linspace(0,tau,360)
@@ -84,13 +66,15 @@ def SU2_to_SO3(U):
   return rot_mtx
 
 def SU2_from_r3_sphere_point(x,y,z):
-  #assert pont has normal local orientation, ref vector therefore to be the north pole.
-  axis = np.cross([0,0,1], [x,y,z])
-  n = np.linalg.norm(axis)
+  #assert point has normal local orientation, ref vector therefore to be the north pole.
+  ref_vec = np.array([0,0,1])
+  sp = np.array([x,y,z])
+  rot_axis = np.cross(ref_vec,sp)
+  n = np.linalg.norm(rot_axis)
   if n < 1e-9:return I  # already north pole
-  axis /= n
+  rot_axis /= n
   angle = np.arccos(z)
-  return SU2(axis, angle)
+  return SU2(rot_axis,angle)
 
 def S2_to_SU2(sp,amt):
   assert 0.0 < amt <= 1.0, "amt must be a scalar between 0 and 1"
@@ -110,13 +94,13 @@ def S2_arc_to_SU2(sp1,sp2,scalar,tol=1e-9):
   angle = np.arccos(np.clip(np.dot(u, v), -1.0, 1.0))
   return SU2(axis,scalar*angle)
 
-#rotate pts in R3 by an element in SU(2)
+#rotate points in R3 by an element in SU(2)
 def rotate_points(points,sphere_pos,amt):
   U = S2_to_SU2(sphere_pos,amt)
   RM = SU2_to_SO3(U)
   return points @ RM.T
 
-#rotate pts in R3 along a spherical arc between two sphere points
+#rotate points in R3 along a spherical arc between two sphere points
 def rotate_points_arc(points,fp,tp,amt):
   U = S2_arc_to_SU2(fp,tp,amt)
   RM = SU2_to_SO3(U)
@@ -127,7 +111,7 @@ def rotate_points_arc(points,fp,tp,amt):
 # ----------------------DEMO------------------------------------------------------
 if __name__ == "__main__":
     from PlotContext import PlotContext
-    from tkiter_widgets import IntSlider, FloatSlider
+    from tkiter_widgets import FloatSlider
 
     wid_args = {"th1":0.01,"ph1":0.01,"th2":0.01,"ph2":pi,"amt":0.0}
     pctx = PlotContext(-1,1,"SU(2) operations demo",proj="3d")
@@ -137,8 +121,6 @@ if __name__ == "__main__":
     from_marker = sphere_to_cart(from_pos)
     to_marker = sphere_to_cart(to_pos)
     #start_pts = rotate_points(base_circ,from_pos,1.0)
-
-    print(float(wid_args["th1"]))
 
     def plot_demo():
       amt = pi * wid_args["amt"]

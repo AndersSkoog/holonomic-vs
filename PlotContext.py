@@ -27,8 +27,8 @@ class PlotContext:
         self.ax = None
         if proj == "2d":
             self.fig, self.ax = plt.subplots()
-            self.ax.xlim(dmin, dmax)
-            self.ax.ylim(dmin, dmax)
+            plt.xlim((dmin,dmax))
+            plt.ylim((dmin, dmax))
             self.ax.set_autoscale_on(False)
         else:
             self.fig = plt.figure()
