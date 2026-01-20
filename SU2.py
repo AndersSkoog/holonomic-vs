@@ -1,6 +1,9 @@
 import numpy as np
 import cmath
 from math import sin, cos, pi, tau
+from S2 import S2_to_R3, xy_circle
+from lib import normalize_vector, angles
+from hopf import base_fiber
 from plane_torision import torsion_angle
 from projection import plane_to_sphere
 """
@@ -8,21 +11,6 @@ One construction of elements in SU(2):
 An element of SU(2) is a distance traveled from the identity by an amount (a) in a direction specified 
 by the cartesian conversion of a point on S² (r,theta,phi).
 """
-#-------------------- Helper Functions---------------------------------
-#convert to a spherical coordinate to cartesian coordinate
-def sphere_to_cart(c):
-  r,theta,phi = c
-  x = r * np.sin(phi) * np.cos(theta)
-  y = r * np.sin(phi) * np.sin(theta)
-  z = r * np.cos(phi)
-  return np.array([x,y,z])
-
-def normalize_vector(vec):
-  vec = np.array(vec)
-  n = np.linalg.norm(vec)
-  if n == 0: return vec
-  return vec / n
-
 #-------------------------------------------Implementation-------------------------------------------
 #pauli matrices
 o1 = np.array([[0,1],[1,0]], dtype=complex)
@@ -30,11 +18,7 @@ o2 = np.array([[0,-1j],[1j,0]], dtype=complex)
 o3 = np.array([[1,0],[0,-1]], dtype=complex)
 #Identity in SU(2)
 I = np.eye(2, dtype=complex)
-#angles
-angles = np.linspace(0,tau,360)
-#base circle
-base_circle = np.array([[cos(a),sin(a),0] for a in angles])
-base_fiber = canonical_fiber()
+base_circle = xy_circle
 
 def is_SU2(U, tol=1e-9):
   a, b = U.item(0), U.item(1)
