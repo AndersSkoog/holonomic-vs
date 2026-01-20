@@ -6,6 +6,27 @@ from plane_torision import torsion_angle
 from projection import plane_to_sphere
 
 angles = np.linspace(0, tau, 360)
+def norm_s(z:complex) -> float: return abs(z) / np.sqrt(1.0 + pow(abs(z),2))
+def norm_c(z:complex) -> float: return 1.0 / np.sqrt(1.0 + pow(abs(z),2))
+
+
+def s3_circle_pt(s2):
+    """
+    Return the circle on S^3 ⊂ C^2
+    corresponding to the line through the origin in C^2 with slope a = tan(ϕ/2) e^iθ.
+    where θ is the polar angle, and ϕ is the azimuthal angle of a spherical coordinate.
+    This is the intersection of the complex line with the 3-sphere.
+    """
+    r,theta,phi = s2
+    slope = np.tan(phi / 2) * cmath.exp(1j * theta)
+    m = abs(slope)
+    s = norm_s(slope)
+    c = norm_c(slope)
+    phase_a = slope / m if m != 0 else 1  # unit complex number
+    z1 = c * cmath.exp(1j)
+    z2 = s * phase_a * cmath.exp(1j)
+    return z1,z2
+
 
 #circle fiber in C2
 def base_fiber(ts=angles):
@@ -17,7 +38,7 @@ def base_fiber(ts=angles):
 base_fiber = base_fiber()
 
 def twisted_fiber(U,twist_angle,fiber=base_fiber):
-  P = np.array([[np.exp(1j*twist_angle), 0],[0, np.exp(-1j*twist_angle)]])
+  P = np.array([[np.exp(1j*twist_angle), 0],[0, np.exp(-1j*twist_angle)]],dtype=complex)
   return (U @ P @ fiber.T).T
 
 
