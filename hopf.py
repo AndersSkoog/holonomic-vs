@@ -30,11 +30,11 @@ def proj_fiber_pt(theta:float,phi:float,t:float):
   z = z2.imag / denom
   return np.asarray([x,y,z])
 
-
 def proj_hopf_link(theta_1,theta_2,phi_1,phi_2,tv,**kwargs):
-  pts = [proj_fiber_pt(theta_1,phi_1,t) for t in tv]
-  pts.extend([proj_fiber_pt(theta_2,phi_2,t) for t in tv])
-  return np.asarray(pts)
+  circ_1 = np.asarray([proj_fiber_pt(theta_1,phi_1,t) for t in tv])
+  circ_2 = np.asarray([proj_fiber_pt(theta_2,phi_2,t) for t in tv])
+  return circ_1,circ_2
+
 
 ##------------------DEMO-------------------------------------------
 
@@ -48,13 +48,14 @@ if __name__ == "__main__":
 
   def wid_change(_id, val):
       args[_id] = val
-      ret = proj_hopf_link(**args)
+      circ1,circ2 = proj_hopf_link(**args)
       pctx.clear()
-      pctx.plot_pointlist(ret, "black", 0.5)
+      pctx.plot_pointlist(circ1,"black",0.5)
+      pctx.plot_pointlist(circ2, "black", 0.5)
 
 
   theta_slider_1 = FloatSlider(pctx, "theta_1", "theta_1", 0.0, tau, args["theta_1"], wid_change)
-  phi_slider_1 = FloatSlider(pctx, "phi1_", "phi_1", 0.0, tau, args["phi_1"], wid_change)
+  phi_slider_1 = FloatSlider(pctx, "phi_1", "phi_1", 0.0, tau, args["phi_1"], wid_change)
   theta_slider_2 = FloatSlider(pctx, "theta_2", "theta_2", 0.0, tau, args["theta_2"], wid_change)
   phi_slider_2 = FloatSlider(pctx, "phi_2", "phi_2", 0.0, tau, args["phi_2"], wid_change)
   pctx.run()
