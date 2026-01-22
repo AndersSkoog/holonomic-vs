@@ -7,7 +7,7 @@ def fiber_pt(theta: float, phi: float, t: float):
   z2 = cmath.sin(phi/2) * cmath.exp(1j*(t + theta))
   return z1, z2
 
-def fiber(theta,phi,tv): return np.asarray([fiber_pt(theta,phi,t) for t in tv])
+def fiber(theta:float,phi:float,tv): return np.asarray([fiber_pt(theta,phi,t) for t in tv])
 
 def fiber_pt_to_quaternion(theta:float,phi:float,t:float):
   z1,z2 = fiber_pt(theta,phi,t)
