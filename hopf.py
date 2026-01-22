@@ -1,26 +1,40 @@
 import numpy as np
 import cmath
 
-def stereo_proj(z1:complex,z2:complex):
+def fiber_pt(theta: float, phi: float, t: float):
+  e_it = cmath.exp(1j * t)
+  z1 = cmath.cos(phi/2) * e_it
+  z2 = cmath.sin(phi/2) * cmath.exp(1j*(t + theta))
+  return z1, z2
+
+def fiber(theta,phi,tv): return np.asarray([fiber_pt(theta,phi,t) for t in tv])
+
+def fiber_pt_to_quaternion(theta:float,phi:float,t:float):
+  z1,z2 = fiber_pt(theta,phi,t)
+  w = z1.real
+  x = z1.imag
+  y = z2.real
+  z = z2.imag
+  # optionally renormalize to avoid numerical drift
+  norm = np.sqrt(w*w + x*x + y*y + z*z)
+  if norm == 0:
+      return 1.0, 0.0, 0.0, 0.0
+  return [w / norm, x / norm, y / norm, z / norm]
+
+
+def proj_fiber_pt(theta:float,phi:float,t:float):
+  z1,z2 = fiber_pt(theta,phi,t)
   denom = 1 - z2.real  # or z2 component along projection axis
   x = z1.real / denom
   y = z1.imag / denom
   z = z2.imag / denom
-  return np.array([x,y,z])
+  return np.asarray([x,y,z])
 
-def hopf_fiber(theta,phi,tv):
-  z1 = lambda t: cmath.cos(phi/2) * cmath.exp(1j*t)
-  z2 = lambda t: cmath.sin(phi/2) * cmath.exp(1j*(theta+t))
-  fiber = np.array([(z1(t),z2(t)) for t in tv])
-  return fiber
 
 def proj_hopf_link(theta_1,theta_2,phi_1,phi_2,tv,**kwargs):
-  fiber1 = hopf_fiber(theta_1, phi_1, tv)
-  fiber2 = hopf_fiber(theta_2, phi_2, tv)
-  ret = []
-  ret.extend([stereo_proj(f[0], f[1]) for f in fiber1])
-  ret.extend([stereo_proj(f[0], f[1]) for f in fiber2])
-  return ret
+  pts = [proj_fiber_pt(theta_1,phi_1,t) for t in tv]
+  pts.extend([proj_fiber_pt(theta_2,phi_2,t) for t in tv])
+  return np.asarray(pts)
 
 ##------------------DEMO-------------------------------------------
 
