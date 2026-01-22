@@ -1,23 +1,17 @@
 import numpy as np
 import cmath
 
-# Build (z1,z2) for a Hopf coordinate (theta,phi,t)
 def hopf_zpair(theta: float, phi: float, t: float):
     """
-    Returns complex pair (z1, z2) on S^3 corresponding to Hopf coords:
-      slope a = tan(phi/2) * e^{i theta}
-      z1 = c * e^{i t}
-      z2 = s * phase_a * e^{i t}
+    Returns (z1,z2) on S^3 given Hopf coords (theta,phi,t).
+    Safe for all phi in [0, pi].
     """
-    slope = cmath.exp(1j * theta) * np.tan(phi / 2.0)
-    mag = abs(slope)
-    s = mag / np.sqrt(1.0 + mag*mag)
-    c = 1.0 / np.sqrt(1.0 + mag*mag)
-    phase_a = slope / mag if mag != 0.0 else 1.0 + 0j
     e_it = cmath.exp(1j * t)
-    z1 = c * e_it
-    z2 = s * phase_a * e_it
+    z1 = cmath.cos(phi/2) * e_it
+    z2 = cmath.sin(phi/2) * cmath.exp(1j*(t + theta))
     return z1, z2
+
+
 
 # Convert complex pair (z1,z2) -> unit quaternion components (w,x,y,z)
 # q = w + x i + y j + z k

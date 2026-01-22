@@ -1,4 +1,5 @@
 import numpy as np
+from math import pi, tau
 from SO import SO_3, SO_3_UP,SO_3_FWD, SO_3_LEFT
 from lib import angles
 
@@ -20,13 +21,6 @@ def S2_to_R3(sc):
   y = r * np.sin(phi) * np.sin(theta)
   z = r * np.cos(phi)
   return np.array([x,y,z],dtype=float)
-
-def R3_to_S2(c):
-  x,y,z = c
-  r = np.sqrt(x * x + y * y + z * z)
-  theta = -y*np.arctan2(y,x)
-  phi = np.arccos(z/r)
-  return np.array([r,theta,phi],dtype=float)
 
 def S2_cube_vertices(sc):
   x,y,z = S2_to_R3(sc)
@@ -96,6 +90,10 @@ def meridian_circle_xz(s2):
   y = r * np.sin(phi) * np.sin(theta)
   c = mr*xz_circle + np.full((360,3),[0.0,y,0.0])
   return c
+
+
+
+
 
 
 
