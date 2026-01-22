@@ -32,3 +32,22 @@ def orthonormal_frame(v):
     n1 = unit(np.cross(v, tmp))
     n2 = np.cross(v, n1)
     return n1, n2
+
+def antipodes(p):
+  x,y,z = p
+  return [
+      [x,y,z],[-x,y,z],[x,-y,z],[-x,-y,z],
+      [x,y,-z],[-x,y,-z],[x,-y,-z],[-x,-y,-z]
+  ]
+
+def orthogonal_ref(plane):
+    return [[0,0,1],[0,1,0],[1,0,0]][["xy","xz","yz"].index(plane)]
+
+def orthonormal_u(p,direction):
+  ref = orthogonal_ref(direction)
+  return normalize_vector(np.cross(ref,p))
+
+def orthonormal_v(p,direction):
+  u = orthonormal_u(p,direction)
+  return normalize_vector(np.cross(p,u))
+
