@@ -35,8 +35,10 @@ class PlotContext:
             self.ax = self.fig.add_subplot(1,1,1,projection="3d")
             self.ax.set_xlim(dmin, dmax)
             self.ax.set_ylim(dmin, dmax)
-            self.ax.set_zlim(dmin, dmax)
+            self.ax.set_zlim(dmin,dmax)
             self.ax.set_autoscale_on(False)
+            self.ax.set_box_aspect([1, 1, 1])
+
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=False)
 
@@ -55,12 +57,23 @@ class PlotContext:
             self.ax.plot(x,y,z,color=col,linewidth=lw)
         self.canvas.draw()
 
+    def plot_pointlist_vec(self, pts, col="black", lw=0.2):
+        if self.proj == "2d":
+            self.ax.plot(pts[0],pts[1],color=col,linewidth=lw)
+        if self.proj == "3d":
+            self.ax.plot(pts[0],pts[1],pts[2],color=col,linewidth=lw)
+        self.canvas.draw()
+
     def plot_marker(self,pt,size,color):
         self.ax.plot(pt[0],pt[1],pt[2],color=color,marker="x",markersize=size)
 
     def plot_pointlists(self,ptsl,col,lw):
         for i in range(len(ptsl)):
             self.plot_pointlist(ptsl[i],col,lw)
+
+    def plot_pointlists_vec(self,ptsl,col,lw):
+        for i in range(len(ptsl)):
+            self.plot_pointlist_vec(ptsl[i],col,lw)
 
     def plot_lines(self, lines, col="black", lw=1):
         lines_shape = np.shape(lines)
