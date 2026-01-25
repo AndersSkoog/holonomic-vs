@@ -7,19 +7,31 @@ xy_circle = np.array([[np.cos(a),np.sin(a),0.0] for a in angles])
 yz_circle = np.array([[0.0,np.cos(a),np.sin(a)] for a in angles])
 xz_circle = np.array([[np.cos(a),0.0,np.sin(a)] for a in angles])
 
-def R3_to_S2(r3,r=1):
+def stereo_project_R2_R3(p,R=1.0):
+  x, y = p
+  r2 = x * x + y * y
+  d = r2 + R * R
+  X = 2 * R * x / d
+  Y = 2 * R * y / d
+  Z = (r2 - R * R) / d
+  return np.array([X, Y, Z])
+
+def R3_to_S2(r3,R=1):
   x,y,z = r3
-  r = r if r==1 else np.sqrt(x * x + y * y + z * z)
+  R = R if R==1 else np.sqrt(x * x + y * y + z * z)
   theta = np.arctan2(y,x)  # longitude
-  phi = np.sign(y)*np.arccos(z / r)  # colatitude
-  return [r,theta,phi]
+  phi = np.sign(y)*np.arccos(z / R)  # colatitude
+  return [R,theta,phi]
+
+def R2_to_S2(r2,R): return R3_to_S2(stereo_project_R2_R3(r2,R))
+
 
 #convert to a spherical coordinate to cartesian coordinate
 def S2_to_R3(sc):
-  r,theta,phi = sc
-  x = r * np.sin(phi) * np.cos(theta)
-  y = r * np.sin(phi) * np.sin(theta)
-  z = r * np.cos(phi)
+  R,theta,phi = sc
+  x = R * np.sin(phi) * np.cos(theta)
+  y = R * np.sin(phi) * np.sin(theta)
+  z = R * np.cos(phi)
   return np.array([x,y,z],dtype=float)
 
 def S2_cube_vertices(sc):
