@@ -23,8 +23,14 @@ def R3_to_S2(r3,R=1):
   phi = np.sign(y)*np.arccos(z / R)  # colatitude
   return [R,theta,phi]
 
-def R2_to_S2(r2,R): return R3_to_S2(stereo_project_R2_R3(r2,R))
 
+def R2_to_S2(r2,R):
+  px,py = r2
+  theta = np.arctan2(py,px) # can be the theta value for a spherical coordinate
+  phi = np.sqrt((px*px)+(py*py)) # can be the polar angle for the spherical coordinate
+  return np.asarray([R,theta,phi])
+
+#def R2_to_S2(r2,R): return R3_to_S2(stereo_project_R2_R3(r2,R))
 
 #convert to a spherical coordinate to cartesian coordinate
 def S2_to_R3(sc):
