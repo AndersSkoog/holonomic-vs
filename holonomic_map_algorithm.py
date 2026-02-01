@@ -11,6 +11,7 @@ def normalize_vector(vec):
   n = np.linalg.norm(vec)
   if n == 0: return vec
   return vec / n
+
 #-----------------Disc to S2 Lift----------------------------
 def stereo_proj(p, R):
     x, y = p
@@ -35,6 +36,7 @@ def stereo_proj_vec(p, R=1.0):
 
 
 #------------------Rotation matrix SO(N) Group----------------------------------
+
 def axis_rotmtx(i, j, angle, dim):
     mtx = np.identity(dim)
     c, s = np.cos(angle), np.sin(angle)
@@ -53,6 +55,7 @@ def SO(angs):
     return rot_mtx
 
 #----------------- SU(2) Group -----------------------------------------------
+
 #pauli matrices
 o1 = np.array([[0,1],[1,0]], dtype=complex)
 o2 = np.array([[0,-1j],[1j,0]], dtype=complex)
@@ -74,6 +77,7 @@ def SU2(axis,angle):
   return U
 
 #----------------Holonomic Relation-------------------------
+
 def torision_angle(disc_points,index):
   assert 0 <= index, "index out of range"
   li = len(disc_points) - 1
@@ -91,6 +95,7 @@ def rot_disc_points(disc_points, index):
     return np.copy(disc_points) @ rm.T
 
 #-------------------- Hopf fibration -----------------------
+
 def base_fiber(res: int):
   angs = np.linspace(0, tau, res, endpoint=False)
   return np.asarray([(cmath.exp(1j*t),0.0+0.0j) for t in angs],dtype=complex)
@@ -142,6 +147,7 @@ def proj_hopf_fibration(fibration):
  return circles1,circles2
 
 #-----------------------Holonomic map Implementation----------------------------------
+""""
 def holonomic_map(disc_points,index,lift):
   assert lift in (0,1,2),"lift higher than 2 not impl"
   disc_pt = disc_points[index]
@@ -157,7 +163,7 @@ def holonomic_map(disc_points,index,lift):
 
 #def holomap(disc_points,lift):
 #    return [holoview(disc_points,i,lift) for i in range(len(disc_points))]
-
+"""
 #-----------------------Visualization----------------------------------------
 def sphere_persp_basis(V):
   view_dir = -V / np.linalg.norm(V)
