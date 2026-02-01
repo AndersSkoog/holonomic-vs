@@ -15,25 +15,24 @@ def normalize_vector(vec):
 #-----------------Disc to S2 Lift----------------------------
 def stereo_proj(p, R):
     x, y = p
-    r2 = x * x + y * y
-    d = r2 + R * R
-    X, Y, Z = (2 * R * x) / d, (2 * R * y) / d, (r2 - R * R) / d
+    r2 = x*x + y*y
+    d = r2 + R*R
+    X = 2*R*x/d
+    Y = 2*R*y/d
+    Z = (r2 - R*R)/d
     theta = np.arctan2(Y, X)
-    phi = np.arccos(Z / R)
-    return np.array([X, Y, Z, theta, phi])
+    phi   = np.arccos(Z / R)
+    return np.array([X, Y, Z]), np.array([theta, phi])
 
-def stereo_proj_vec(p, R=1.0):
-  pl = np.asarray(p, dtype=float)
-  x, y = pl[..., 0], pl[..., 1]
-  r2 = x * x + y * y
-  d = r2 + R * R
-  X = 2 * R * x / d
-  Y = 2 * R * y / d
-  Z = (r2 - R * R) / d
-  theta = np.arctan2(Y, X)
-  phi = np.arccos(Z / R)
-  return np.stack([X, Y, Z, theta, phi], axis=-1)
-
+def stereo_proj_vec(P, R=1.0):
+    x = P[:,0]
+    y = P[:,1]
+    r2 = x*x + y*y
+    d = r2 + R*R
+    X = 2*R*x/d
+    Y = 2*R*y/d
+    Z = (r2 - R*R)/d
+    return np.column_stack([X, Y, Z])
 
 #------------------Rotation matrix SO(N) Group----------------------------------
 
@@ -106,12 +105,12 @@ def hopf_link_from_disc_point(pts,index,R=1.0):
   assert 0 <= index <= (len(pts)-1), "index out of range"
   tor_ang = torision_angle(pts,index)
   dp = pts[index]
-  x,y,z,theta,phi = stereo_proj(dp,R)
+  r3_1,s2 = stereo_proj(dp,R)
+  theta,phi = s2
   orient = SO([theta,phi,tor_ang])
-  p1 = np.asarray([x,y,z])
-  p2 = p1 @ orient.T  # or should it be orient @ sp[0] ?
-  U1 = SU2(p1,1.0)
-  U2 = SU2(p2,1.0)
+  r3_2 = r3_1 @ orient.T  # or should it be orient @ sp[0] ?
+  U1 = SU2(r3_1,1.0)
+  U2 = SU2(r3_2,1.0)
   fiber1 = base_fiber_360 @ U1
   fiber2 = base_fiber_360 @ U2
   return fiber1,fiber2
@@ -188,18 +187,18 @@ def sphere_persp_render_points(P, V, basis, focal=1.0, eps=1e-6):
 
 def holonomic_view_lift_1(disc_points,index):
   disc_pt = disc_points[index]
-  rot_disc_points(disc_points,index)
+  rot_pts = rot_disc_points(disc_points,index)
   view_pt = stereo_proj(disc_pt,3.0)
-  inner_sphere_pts = stereo_proj_vec(rot_disc_points,1.0)
+  inner_sphere_pts = stereo_proj_vec(rot_pts,1.0)
   basis = sphere_persp_basis(view_pt)
   return sphere_persp_render_points(inner_sphere_pts,view_pt,basis,1.0)
 
 def holonomic_view_lift_2(disc_points,index):
   disc_pt = disc_points[index]
-  rot_disc_points(disc_points,index)
+  rot_pts = rot_disc_points(disc_points,index)
   view_pt = stereo_proj(disc_pt,3.0)
   basis = sphere_persp_basis(view_pt)
-  hopf_fib = hopf_fibration(rot_disc_points,1.0)
+  hopf_fib = hopf_fibration(rot_pts,1.0)
   circles1,circles2 = proj_hopf_fibration(hopf_fib)
   rendpts1 = [sphere_persp_render_points(circle,view_pt,basis,1.0) for circle in circles1]
   rendpts2 = [sphere_persp_render_points(circle,view_pt,basis,1.0) for circle in circles2]
