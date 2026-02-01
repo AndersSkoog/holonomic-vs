@@ -215,11 +215,11 @@ if __name__ == "__main__":
       plot_point_list(arr)
 
   def draw_0(disc_points,index):
-    rend_pts = holonomic_map(disc_points,index,0)[1]
+    rend_pts = rot_disc_points(disc_points, index)
     fig.clear()
     for p in rend_pts:
-      x, y, s = p
-      plt.plot(x, y, color="black",lw=0.2)
+      x,y = p
+      plt.plot(x,y,color="black",lw=0.2)
 
   def draw_1(disc_points,index):
     rend_pts = holonomic_view_lift_1(disc_points, index)
