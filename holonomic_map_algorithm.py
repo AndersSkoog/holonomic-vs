@@ -171,19 +171,19 @@ def sphere_persp_basis(V):
   return {"view_dir":view_dir,"right":right,"up":up}
 
 def sphere_persp_render_points(P, V, basis, focal=1.0, eps=1e-6):
-    # P : (N,3)
-    ray = P - V                              # (N,3)
-    view_dir = basis["view_dir"]
-    right    = basis["right"]
-    up       = basis["up"]
-    depth = ray @ view_dir                  # (N,)
-    depth = np.where(depth < eps, eps, depth)
-    scale = focal / depth                   # (N,)
-    projected = ray * scale[:, None]        # (N,3)
-    x = projected @ right                   # (N,)
-    y = projected @ up                      # (N,)
-    size = 50.0 / depth
-    return np.column_stack([x, y, size])    # (N,3)
+  # P : (N,3)
+  ray = P - V                              # (N,3)
+  view_dir = basis["view_dir"]
+  right    = basis["right"]
+  up       = basis["up"]
+  depth = ray @ view_dir                  # (N,)
+  depth = np.where(depth < eps, eps, depth)
+  scale = focal / depth                   # (N,)
+  projected = ray * scale[:, None]        # (N,3)
+  x = projected @ right                   # (N,)
+  y = projected @ up                      # (N,)
+  size = 50.0 / depth
+  return np.column_stack([x, y, size])    # (N,3)
 
 def holonomic_view_lift_1(disc_points,index):
   disc_pt = disc_points[index]
