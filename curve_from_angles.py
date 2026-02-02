@@ -5,9 +5,9 @@ def rad2deg(a): return (180/pi)*a
 
 def curve_amt(r,au):
   s=pi/2
-  ax = (r * cos((3*s)+au))
-  ay = (r * sin(au))
-  return ax,ay
+  x_amt = (r * cos((3*s)+au))
+  y_amt = (r * sin(au))
+  return x_amt,y_amt
 
 def step_cnt(a1,a2,au):
   return int(abs(a1-a2)/au)
