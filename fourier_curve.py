@@ -9,6 +9,7 @@ def cyclic_fourier_curve(ca,cb,cphi,cpsi,M,L,res,**kwargs):
     pts = []
     for i in indicies:
       vi = i % res
+      if vi == 0: continue
       Li = int(i/res)
       t = (tau/res) * vi
       rot = cmath.exp(1j * tau * Li / L)
@@ -40,6 +41,8 @@ if __name__ == "__main__":
   def arg_change(_id,val):
     args[_id] = val
     plt_ctx.clear()
+
+
     plt_ctx.plot_pointlist(cyclic_fourier_curve(**args),lw=0.2)
 
 
