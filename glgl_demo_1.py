@@ -3,13 +3,9 @@ import pyglet.gl as gl
 import pyglet.window as win
 import pyglet.graphics as graphics
 import pyglet.graphics.shader as shader
-import pyglet.gui as gui
 import pyglet.app as app
-from pyglet_widgets import create_slider
 from mesh_lib import sphere_mesh
 from utils import mtx_to_glsl_uniform,NxN_id_f32
-from math import tau, pi
-
 
 VERTEX_SRC = """
 #version 330 core
@@ -41,8 +37,6 @@ void main()
     FragColor = vec4(vec3(light), 0.4);
 }
 """
-
-
 
 def perspective(fov, aspect, near, far, **kwargs):
     f = 1.0 / np.tan(fov / 2)
@@ -123,28 +117,6 @@ vlist = prog.vertex_list_indexed(
     batch=batch
 )
 
-#guiwin = win.Window(500,500,"gads")
-#guibatch = graphics.Batch()
-guiframe = gui.Frame(prog_win,cell_size=16,order=4)
-
-
-prog_dict = {
-  "params":prog_params,
-  "guiframe":guiframe,
-  "prog":prog,
-  "batch":batch
-}
-
-slider1,label1 = create_slider(
-    param_name="cam_theta",unifupdate=uniform_update,
-    wid_index=0,frame_pos=(16,16),cell_size=16,cell_margin=10,
-    parser=lambda v: tau * (0.01 * v),prog_dict=prog_dict
-)
-def slider1_handler(w,val):
-    label1.text = f"{val}"
-    label1.draw()
-
-slider1.set_handler("on_change",slider1_handler)
 
 
 
@@ -155,40 +127,3 @@ def on_draw():
   #guibatch.draw()
 
 app.run()
-
-
-
-
-"""
-wid_frame = WidgetWindow(
-  prog=prog,
-  batch=guibatch,
-  uniform_update=uniform_update,
-  params=prog_params,
-  frame_pos=(25, 25)
-)
-
-wid_frame.reg_input(
-  param_name="cam_theta",
-  init_val=(np.pi*2) * 0.4,
-  parser=lambda v: (np.pi * 2) * v
-)
-
-wid_frame.reg_input(
-  param_name="cam_phi",
-  init_val=(np.pi*2) * 0.1,
-  parser=lambda v: (np.pi * 2) * v
-)
-
-wid_frame.reg_input(
-  param_name="R",
-  init_val=3.0,
-  parser=lambda v: 1.0 + (5.0 * v)
-)
-
-wid_frame.reg_input(
-  param_name="fov",
-  init_val=np.radians(60.0),
-  parser=lambda v: np.radians(60.0) + (np.radians(30.0) * v)
-)
-"""

@@ -61,7 +61,7 @@ def S2_to_SU2(sp,amt):
   assert 0.0 < amt <= 1.0, "amt must be a scalar between 0 and 1"
   #theta,phi = sphere_pos[1],sphere_pos[2]
   angle = pi * amt
-  rot_axis = normalize_vector(S2_to_R3(sp))
+  rot_axis = normalize_vector(sp)
   return SU2(rot_axis,angle)
 
 #return SU(2) element along a corresponding arc between two unit sphere coordinates
@@ -74,6 +74,18 @@ def S2_arc_to_SU2(sp1,sp2,scalar,tol=1e-9):
   axis /= norm
   angle = np.arccos(np.clip(np.dot(u, v), -1.0, 1.0))
   return SU2(axis,scalar*angle)
+
+
+def R3_arc_to_SU2(sp1,sp2,scalar,tol=1e-9):
+  u = normalize_vector(sp1)
+  v = normalize_vector(sp2)
+  axis = np.cross(u, v)
+  norm = np.linalg.norm(axis)
+  if norm < tol:return None,0.0  # same or opposite direction
+  axis /= norm
+  angle = np.arccos(np.clip(np.dot(u, v), -1.0, 1.0))
+  return SU2(axis,scalar*angle)
+
 
 #rotate points in R3 by an element in SU(2)
 def rotate_points(points,sphere_pos,amt):

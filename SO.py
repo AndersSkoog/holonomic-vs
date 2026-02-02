@@ -25,7 +25,7 @@ def Rn(n, i, j, angle):
 
 def SO_3(yaw,pitch,roll):return Rz(yaw) @ Ry(pitch) @ Rx(roll)
 def SO_3_UP(so3):  return normalize_vector(so3 @ np.array([0.0,0,1.0],dtype=float))
-def SO_3_LEFT(so3):return normalize_vector(so3 @ np.array([0.0,1.0,0.0],dtype=float))
+def SO_3_RIGHT(so3):return normalize_vector(so3 @ np.array([0.0,1.0,0.0],dtype=float))
 def SO_3_FWD(so3):return normalize_vector(so3 @ np.array([1.0,0.0,0.0],dtype=float))
 def SO_N(n,angles):
   assert len(angles) == (n * (n - 1)) // 2, "Incorrect number of angles"

@@ -207,6 +207,8 @@ def holonomic_view_lift_2(disc_points,index):
 
 if __name__ == "__main__":
   import matplotlib.pyplot as plt
+  from curve_from_angles import curve_from_angles
+
   fig = plt.figure()
   ax = plt.axis('equal')
 

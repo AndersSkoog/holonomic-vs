@@ -1,6 +1,5 @@
 import numpy as np
-from math import pi, tau
-from SO import SO_3, SO_3_UP,SO_3_FWD, SO_3_LEFT
+from SO import SO_3, SO_3_UP,SO_3_FWD, SO_3_RIGHT
 from lib import angles
 
 xy_circle = np.array([[np.cos(a),np.sin(a),0.0] for a in angles])
@@ -52,7 +51,7 @@ def S2_Orient(s2,roll=0):
   so3 = S2_to_SO_3(s2,roll)
   up = SO_3_UP(so3)
   fwd = SO_3_FWD(so3)
-  left = SO_3_LEFT(so3)
+  left = SO_3_RIGHT(so3)
   return {"up":up,"fwd":fwd,"left":left,"rot_mtx":so3}
 
 def Oriented_Great_circle(s2,plane,roll=0):
