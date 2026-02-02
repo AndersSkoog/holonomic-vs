@@ -188,7 +188,7 @@ def sphere_persp_render_points(P, V, basis, focal=1.0, eps=1e-6):
 def holonomic_view_lift_1(disc_points,index):
   disc_pt = disc_points[index]
   rot_pts = rot_disc_points(disc_points,index)
-  view_pt = stereo_proj(disc_pt,3.0)
+  view_pt,_ = stereo_proj(disc_pt,3.0)[0]
   inner_sphere_pts = stereo_proj_vec(rot_pts,1.0)
   basis = sphere_persp_basis(view_pt)
   return sphere_persp_render_points(inner_sphere_pts,view_pt,basis,1.0)
@@ -196,7 +196,7 @@ def holonomic_view_lift_1(disc_points,index):
 def holonomic_view_lift_2(disc_points,index):
   disc_pt = disc_points[index]
   rot_pts = rot_disc_points(disc_points,index)
-  view_pt = stereo_proj(disc_pt,3.0)
+  view_pt,_ = stereo_proj(disc_pt,3.0)
   basis = sphere_persp_basis(view_pt)
   hopf_fib = hopf_fibration(rot_pts,1.0)
   circles1,circles2 = proj_hopf_fibration(hopf_fib)
