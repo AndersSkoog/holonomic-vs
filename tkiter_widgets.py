@@ -1,10 +1,9 @@
 from math import tau
 import tkinter as tk
-from tkinter import ttk
-from tkinter.constants import SINGLE
+from tkinter import ttk, simpledialog, messagebox
 from typing import Sequence
 from PlotContext import PlotContext
-#from datafile import DataManager
+from DataFile import DataFile, BASE_DIR
 
 def parse_floats(s: str):
     return [float(x) for x in s.split(",") if x.strip() != ""]
@@ -200,8 +199,6 @@ class Angle(ttk.Frame):
         self.var.set(str(value))
         self._trace_id = self.var.trace_add("write", self._changed)
 
-
-
 class StepedRange(ttk.Frame):
     def __init__(self, ctx:PlotContext,wid_id:str, label_text:str,center_val,step_val,cnt:int,on_change,**kwargs):
         super().__init__(ctx.widget_frame, **kwargs)
@@ -236,13 +233,13 @@ class StepedRange(ttk.Frame):
         self._trace_id = self.var.trace_add("write", self._changed)
 
 class NumberboxInt(ttk.Frame):
-    def __init__(self, ctx:PlotContext,wid_id:str, label_text:str,on_change,init_val:int,max_val=10000,**kwargs):
+    def __init__(self, ctx:PlotContext,wid_id:str, label_text:str,min_val:int,max_val:int,on_change,**kwargs):
         super().__init__(ctx.widget_frame, **kwargs)
         self.wid_id  = wid_id
-        self.var = tk.StringVar(value="0")
+        self.var = tk.StringVar(value=f"{min_val}")
         self.on_change = on_change
         ttk.Label(ctx.widget_frame, text=label_text).pack(side=tk.TOP, anchor="w")
-        ttk.Spinbox(master=ctx.widget_frame,from_=0,to=max_val,increment=1,textvariable=self.var).pack(fill=tk.X)
+        ttk.Spinbox(master=ctx.widget_frame,from_=min_val,to=max_val,increment=1,textvariable=self.var).pack(fill=tk.X)
         self._trace_id = self.var.trace_add("write", self._changed)
         self.pack(fill=tk.X, pady=1)
 
@@ -296,12 +293,14 @@ class NumberListEntry(ttk.Frame):
         self.var.trace_remove("write", self._trace_id)
         self.var.set(','.join(map(str,value)))
         self._trace_id = self.var.trace_add("write", self._changed)
-"""
+
 class PresetCtrl(ttk.Frame):
-    def __init__(self, ctx:PlotContext,presetfilename:str,get_params_callback,apply_params_callback,**kwargs):
+    def __init__(self, ctx:PlotContext,filename:str,get_params_callback,apply_params_callback,**kwargs):
         super().__init__(ctx.widget_frame, **kwargs)
-        self.preset_manager = PresetManager(presetfilename)
-        self.presets_names = self.preset_manager.list_presets()
+        self.datafile_path = BASE_DIR / filename
+        print(self.datafile_path)
+        self.datafile = DataFile(self.datafile_path)
+        self.presets_names = list(self.datafile.data.keys())
         self.selboxvar = tk.StringVar(value="none")
         self.get_params = get_params_callback
         self.apply_params = apply_params_callback
@@ -318,7 +317,7 @@ class PresetCtrl(ttk.Frame):
         self.pack(fill="x", pady=2)
 
     def _refresh_presets_list(self):
-        self.presets_names = self.preset_manager.list_presets()
+        self.presets_names = list(self.datafile.data.keys())
         self.selbox["values"] = self.presets_names
         self.selboxvar.set(self.presets_names[-1])  # select newest
 
@@ -328,16 +327,17 @@ class PresetCtrl(ttk.Frame):
         if not name:
             return
         params = self.get_params()
-        self.preset_manager.save_preset(name, params)
+        self.datafile.save(name,params)
         self._refresh_presets_list()
         messagebox.showinfo("Saved", f"Preset '{name}' saved.")
 
     def _load_preset(self):
         preset = self.selboxvar.get()
         if preset in self.presets_names:
-            params = self.preset_manager.load_preset(preset)
+            params = self.datafile.load(preset)
             self.apply_params(params)
-            
+
+"""            
 class FourierCurveCtrl(ttk.Frame):
     def __init__(self, ctx:PlotContext,presetfilename:str,apply_cb,**kwargs):
         super().__init__(ctx.widget_frame, **kwargs)
