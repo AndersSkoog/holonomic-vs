@@ -1,12 +1,12 @@
 from pathlib import Path
 import numpy as np
 
-def proj_path(): return Path.cwd().parent
+BASE_DIR = Path(__file__).resolve().parent
 
-def proj_file_path(path:str): return str(Path.cwd()) + path
+def proj_file_path(path:str): return str(BASE_DIR) + path
 
-def read_file(path: str) -> str:
-  f = open(proj_file_path(path))
+def read_file(filepath:str) -> str:
+  f = open(proj_file_path(filepath))
   txt = f.read()
   f.close()
   return txt
