@@ -3,7 +3,9 @@ import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox
 from typing import Sequence
 from PlotContext import PlotContext
-from DataFile import DataFile, BASE_DIR
+from DataFile import DataFile
+from utils import proj_file_path
+
 
 def parse_floats(s: str):
     return [float(x) for x in s.split(",") if x.strip() != ""]
@@ -295,9 +297,9 @@ class NumberListEntry(ttk.Frame):
         self._trace_id = self.var.trace_add("write", self._changed)
 
 class PresetCtrl(ttk.Frame):
-    def __init__(self, ctx:PlotContext,filename:str,get_params_callback,apply_params_callback,**kwargs):
+    def __init__(self, ctx:PlotContext,filepath:str,get_params_callback,apply_params_callback,**kwargs):
         super().__init__(ctx.widget_frame, **kwargs)
-        self.datafile_path = BASE_DIR / filename
+        self.datafile_path = proj_file_path(filepath)
         print(self.datafile_path)
         self.datafile = DataFile(self.datafile_path)
         self.presets_names = list(self.datafile.data.keys())
