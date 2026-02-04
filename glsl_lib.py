@@ -25,12 +25,12 @@ def view_mtx(cam_pos, target_pos):
     )
 
 
-def mesh_vbo(mesh,color,prog:ShaderProgram,batch:Batch | None):
+def mesh_vbo(mesh,prog:ShaderProgram,batch:Batch | None):
   vertices, normals, indices = mesh
   cnt = len(vertices)
-  R, G, B = np.int8(color[0]), np.int8(color[1]), np.int8(color[2])
-  np_col = np.array([R,G,B],dtype=np.int8)
-  vbo_colors = np.full((cnt, 3), np_col).flatten()
+  #R, G, B = np.int8(color[0]), np.int8(color[1]), np.int8(color[2])
+  #np_col = np.array([R,G,B],dtype=np.int8)
+  #vbo_colors = np.full((cnt, 3), np_col).flatten()
   vbo_vertices = np.asarray(vertices,dtype=np.float32).flatten()
   vbo_normals =  np.asarray(vertices,dtype=np.float32).flatten()
   vbo_indices = np.asarray(list(range(cnt)),dtype=np.int32).flatten()
@@ -40,22 +40,20 @@ def mesh_vbo(mesh,color,prog:ShaderProgram,batch:Batch | None):
       indices=vbo_indices,
       position=vbo_vertices,
       normals=vbo_normals,
-      color=vbo_colors,
       batch=batch
   )
 
-def points_vbo(points,color,prog:ShaderProgram,batch:Batch | None):
+def points_vbo(points,prog:ShaderProgram,batch:Batch | None):
   cnt = len(points)
-  R, G, B = np.int8(color[0]), np.int8(color[1]), np.int8(color[2])
-  np_col = np.array([R,G,B],dtype=np.int8)
+  #R, G, B = np.int8(color[0]), np.int8(color[1]), np.int8(color[2])
+  #np_col = np.array([R,G,B],dtype=np.int8)
   vbo_points = np.asarray(points,dtype=np.float32).flatten()
   vbo_indices = np.asarray(list(range(cnt)),dtype=np.int32).flatten()
-  vbo_colors = np.full((cnt, 3), np_col).flatten()
+  #vbo_colors = np.full((cnt, 3), np_col).flatten()
   return prog.vertex_list_indexed(
       count=cnt,
       mode=GL_POINTS,
       indices=vbo_indices,
       position=vbo_points,
-      color=vbo_colors,
       batch=batch
   )
