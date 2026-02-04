@@ -8,7 +8,7 @@ t01_100 = np.linspace(0,1,100)
 def axis_pairs(dim): return list(combinations(range(dim),2))
 
 def normalize_vector(vec):
-  vec = np.array(vec)
+  vec = np.asarray(vec)
   n = np.linalg.norm(vec)
   if n == 0: return vec
   return vec / n
@@ -51,3 +51,17 @@ def orthonormal_v(p,direction):
   u = orthonormal_u(p,direction)
   return normalize_vector(np.cross(p,u))
 
+def NxN_id_f16(N:int):return np.eye(N,dtype=np.float16)
+def NxN_id_f32(N:int):return np.eye(N,dtype=np.float32)
+def NxN_id_i16(N:int):return np.eye(N,dtype=np.int16)
+def NxN_id_i32(N:int):return np.eye(N,dtype=np.int32)
+def arr_f32(vals): return np.array(vals,dtype=np.float32)
+def arr_f16(vals): return np.array(vals,dtype=np.float16)
+def arr_i32(vals): return np.array(vals,dtype=np.int32)
+def arr_i16(vals): return np.array(vals,dtype=np.int16)
+def arr_fill_f32(val:float,size:int): np.full(shape=(size,),fill_value=val,dtype=np.float32)
+def arr_fill_f16(val: float, size: int): np.full(shape=(size,), fill_value=val, dtype=np.float16)
+def arr_fill_i32(val: float, size: int): np.full(shape=(size,), fill_value=val, dtype=np.float32)
+def arr_fill_i16(val: float, size: int): np.full(shape=(size,), fill_value=val, dtype=np.float16)
+def mtx_to_glsl_uniform(mtx:np.ndarray): return mtx.T.flatten()
+def arr_to_glsl_uniform(arr:np.array): return arr.T.flatten()

@@ -77,7 +77,7 @@ def SU2(axis,angle):
 
 #----------------Holonomic Relation-------------------------
 
-def torision_angle(disc_points,index):
+def torsion_angle(disc_points,index):
   assert 0 <= index, "index out of range"
   li = len(disc_points) - 1
   if (index + 1) <= li:
@@ -103,7 +103,7 @@ base_fiber_360 = base_fiber(360)
 
 def hopf_link_from_disc_point(pts,index,R=1.0):
   assert 0 <= index <= (len(pts)-1), "index out of range"
-  tor_ang = torision_angle(pts,index)
+  tor_ang = torsion_angle(pts,index)
   dp = pts[index]
   r3_1,s2 = stereo_proj(dp,R)
   theta,phi = s2
