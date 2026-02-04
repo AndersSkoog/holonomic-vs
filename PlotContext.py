@@ -65,7 +65,10 @@ class PlotContext:
         self.canvas.draw()
 
     def plot_marker(self,pt,size,color):
-        self.ax.plot(pt[0],pt[1],pt[2],color=color,marker="x",markersize=size)
+        if self.proj == "2d":
+          self.ax.plot(pt[0],pt[1],color=color,marker="x",markersize=size)
+        if self.proj == "3d":
+          self.ax.plot(pt[0], pt[1], pt[2], color=color, marker="x", markersize=size)
 
     def plot_pointlists(self,ptsl,col,lw):
         for i in range(len(ptsl)):
