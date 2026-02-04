@@ -5,7 +5,7 @@ from pathlib import Path
 
 class DataFile:
     def __init__(self, filepath):
-        self.filepath = filepath
+        self.filepath = Path(filepath)
         # load or initialize
         if self.filepath.exists():
             try:
