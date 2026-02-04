@@ -1,7 +1,9 @@
 from math import tau, cos, sin
 import numpy as np
 import cmath
-from DataFile import DataFile, BASE_DIR
+from DataFile import DataFile
+from utils import proj_file_path
+
 
 def cyclic_fourier(t:float,a,b,phi,psi,M) -> complex:
     coef_lens = [len(a),len(b),len(phi),len(psi)]
@@ -18,7 +20,7 @@ def cyclic_fourier(t:float,a,b,phi,psi,M) -> complex:
 
 def tessellate_fourier_pts(a,b,phi,psi,M,L,res,**kwargs):
     tv = np.linspace(0, 1, res)
-    ret = []
+    segments = []
     for k in range(L):
         rot = cmath.exp(1j * tau * k / L)
         arr = []
@@ -26,7 +28,8 @@ def tessellate_fourier_pts(a,b,phi,psi,M,L,res,**kwargs):
             v = rot * cyclic_fourier(t,a,b,phi,psi,M)
             pt = np.array([v.real,v.imag])
             arr.append(pt)
-        ret.append(arr)
+        segments.append(np.asarray(arr))
+    ret = np.asarray(segments).reshape((res*L,2))
     return ret
 
 if __name__ == "__main__":
@@ -60,8 +63,8 @@ if __name__ == "__main__":
   def load_preset(data):
     print(data)
 
-  fp = str(BASE_DIR) + "/data/fourier_curves.json"
-  print(fp)
+  fp = proj_file_path("/data/fourier_curves.json")
+  #print(fp)
   a_entry = NumberListEntry(plt_ctx,"a","a",args["a"],"float",arg_change)
   b_entry = NumberListEntry(plt_ctx,"b","b",args["b"],"float",arg_change)
   phi_entry = NumberListEntry(plt_ctx,"phi","phi",args["phi"],"float",arg_change)
