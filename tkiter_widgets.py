@@ -299,10 +299,11 @@ class NumberListEntry(ttk.Frame):
 class PresetCtrl(ttk.Frame):
     def __init__(self, ctx:PlotContext,filepath:str,get_params_callback,apply_params_callback,**kwargs):
         super().__init__(ctx.widget_frame, **kwargs)
-        self.datafile_path = proj_file_path(filepath)
+        self.datafile_path = filepath
         print(self.datafile_path)
         self.datafile = DataFile(self.datafile_path)
         self.presets_names = list(self.datafile.data.keys())
+        print(self.presets_names)
         self.selboxvar = tk.StringVar(value="none")
         self.get_params = get_params_callback
         self.apply_params = apply_params_callback

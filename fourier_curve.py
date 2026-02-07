@@ -18,6 +18,19 @@ def cyclic_fourier(t:float,a,b,phi,psi,M) -> complex:
     #point = [gamma_t.real,gamma_t.imag]
     return gamma_t
 
+def tessellate_fourier_segments(a,b,phi,psi,M,L,res,**kwargs):
+    tv = np.linspace(0, 1, res)
+    segments = []
+    for k in range(L):
+        rot = cmath.exp(1j * tau * k / L)
+        arr = []
+        for t in tv:
+            v = rot * cyclic_fourier(t,a,b,phi,psi,M)
+            pt = np.array([v.real,v.imag])
+            arr.append(pt)
+        segments.append(np.asarray(arr))
+    return segments
+
 def tessellate_fourier_pts(a,b,phi,psi,M,L,res,**kwargs):
     tv = np.linspace(0, 1, res)
     segments = []
@@ -45,26 +58,28 @@ if __name__ == "__main__":
       "res":360
   }
   plt_ctx = PlotContext(-1,1,"cyclic fourier curve",proj="2d")
-  pts = tessellate_fourier_pts(**args)
+  pts = tessellate_fourier_segments(**args)
 
   def plot_pts():
     plt_ctx.clear()
-    for arr in pts:
-      plt_ctx.plot_pointlist(arr, "black", 0.3)
+    for seg in pts:
+        plt_ctx.plot_pointlist(seg,"black", 0.3)
 
 
   def arg_change(_id,val):
     global pts
     args[_id] = val
-    pts = tessellate_fourier_pts(**args)
+    pts = tessellate_fourier_segments(**args)
     plot_pts()
 
 
   def load_preset(data):
-    print(data)
+    global args, pts
+    args = data
+    pts = tessellate_fourier_segments(**args)
+    plot_pts()
 
   fp = proj_file_path("/data/fourier_curves.json")
-  #print(fp)
   a_entry = NumberListEntry(plt_ctx,"a","a",args["a"],"float",arg_change)
   b_entry = NumberListEntry(plt_ctx,"b","b",args["b"],"float",arg_change)
   phi_entry = NumberListEntry(plt_ctx,"phi","phi",args["phi"],"float",arg_change)
