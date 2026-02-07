@@ -13,7 +13,7 @@ def stereo_project_R2_R3(p,R=1.0):
   X = 2 * R * x / d
   Y = 2 * R * y / d
   Z = (r2 - R * R) / d
-  return np.array([X, Y, Z])
+  return [X,Y,Z]
 
 def R3_to_S2(r3,R=1):
   x,y,z = r3

@@ -3,13 +3,12 @@ from pyglet.graphics.shader import ShaderProgram, Shader
 from pyglet.window import Window
 from pyglet.graphics import Batch
 from pyglet.math import Vec3, Vec2, Mat4
-from glsl_lib import mesh_vbo, points_vbo, persp_proj_mtx, transl_mtx, view_mtx,default_persp_params
+from glsl_lib import mesh_vbo, points_vbo, persp_proj_mtx, transl_mtx, default_persp_params
 from utils import read_file, proj_file_path
 from mesh_lib import sphere_mesh
 from DataFile import DataFile
 from fourier_curve import tessellate_fourier_pts
-from holonomic_map_algorithm import stereo_proj
-import pathlib
+from S2 import stereo_project_R2_R3
 
 batch = Batch()
 curve_file_path = proj_file_path("/data/fourier_curves.json")
@@ -20,9 +19,7 @@ curve_pts = tessellate_fourier_pts(**curve_args)
 sphere = sphere_mesh(1.0)
 sel_index = 0
 sel_curve_pt = curve_pts[sel_index]
-proj_curve_pt = stereo_proj(sel_curve_pt,3.0)[0]
-#print(curve_pts[sel_index])
-cam_pos = Vec3(*list(proj_curve_pt))
+cam_pos = Vec3(*stereo_project_R2_R3(p=sel_curve_pt,R=3.0))
 orgin = Vec3(0.0,0.0,0.0)
 up = Vec3(0.0,0.0,1.0)
 
@@ -55,16 +52,15 @@ uniforms = {
 }
 
 def index_change(_id,val):
-  global sel_index, curve_args, cam_pos, proj_curve_pt, sel_curve_pt
+  global sel_index, curve_args, cam_pos, sel_curve_pt
   sel_index = val
   sel_curve_pt = curve_pts[sel_index]
-  proj_curve_pt = stereo_proj(sel_curve_pt,3.0)[0]
-  cam_pos = Vec3(proj_curve_pt[0],proj_curve_pt[1],proj_curve_pt[2])
+  cam_pos = Vec3(*stereo_project_R2_R3(sel_curve_pt,3.0))
   uniforms["uView"] = Mat4.look_at(cam_pos,orgin,up)
-  uniforms["sel_disc_pont"] = Vec2(sel_curve_pt[0],sel_curve_pt[1])
+  uniforms["sel_disc_point"] = Vec2(sel_curve_pt[0],sel_curve_pt[1])
   prog_1["uView"] = uniforms["uView"]
   prog_2["uView"] = uniforms["uView"]
-  prog_2["sel_disc_point"] = uniforms["sel_disc_pont"]
+  prog_2["sel_disc_point"] = uniforms["sel_disc_point"]
 
 
 if __name__ == "__main__":
