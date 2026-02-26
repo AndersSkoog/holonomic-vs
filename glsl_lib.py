@@ -25,7 +25,7 @@ def view_mtx(cam_pos, target_pos):
     )
 
 
-def mesh_vbo(mesh,prog:ShaderProgram,batch:Batch | None):
+def mesh_vbo(mesh,prog:ShaderProgram):
   vertices, normals, indices = mesh
   cnt = len(vertices)
   #R, G, B = np.int8(color[0]), np.int8(color[1]), np.int8(color[2])
@@ -40,10 +40,9 @@ def mesh_vbo(mesh,prog:ShaderProgram,batch:Batch | None):
       indices=vbo_indices,
       position=vbo_vertices,
       normals=vbo_normals,
-      batch=batch
   )
 
-def points_vbo(points,prog:ShaderProgram,batch:Batch | None):
+def points_vbo(points,prog:ShaderProgram):
   cnt = len(points)
   #R, G, B = np.int8(color[0]), np.int8(color[1]), np.int8(color[2])
   #np_col = np.array([R,G,B],dtype=np.int8)
@@ -55,5 +54,4 @@ def points_vbo(points,prog:ShaderProgram,batch:Batch | None):
       mode=GL_POINTS,
       indices=vbo_indices,
       position=vbo_points,
-      batch=batch
   )

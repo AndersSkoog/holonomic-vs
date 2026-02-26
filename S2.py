@@ -39,6 +39,16 @@ def S2_to_R3(sc):
   z = R * np.cos(phi)
   return np.array([x,y,z],dtype=float)
 
+#another conversion suitable for spherical camera
+def S2_to_R3_v2(sc):
+  r,theta,phi = sc
+  x = r * np.sin(phi) * np.cos(theta)
+  y = r * np.cos(phi)
+  z = r * np.sin(phi) * np.sin(theta)
+  return np.array([x,y,z],dtype=float)
+
+
+
 def S2_cube_vertices(sc):
   x,y,z = S2_to_R3(sc)
   return np.array([[x,y,z],[-x,y,z],[x,-y,z],[-x,-y,z],[x,y,-z],[-x,y,-z],[x,-y,-z],[-x,-y,-z]],dtype=float)

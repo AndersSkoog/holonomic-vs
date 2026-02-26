@@ -10,7 +10,10 @@ from DataFile import DataFile
 from fourier_curve import tessellate_fourier_pts
 from S2 import stereo_project_R2_R3
 
-batch = Batch()
+
+#pyglet opengl window
+win = Window(width=800, height=600, caption="sphere test", resizable=False)
+
 curve_file_path = proj_file_path("/data/fourier_curves.json")
 curves_file = DataFile(curve_file_path)
 curve_args = curves_file.data["curve_1"]
@@ -36,9 +39,9 @@ lift1_shader_str = read_file(lift_1_shader_path)
 lift1_shader = Shader(source_string=lift1_shader_str,shader_type='vertex')
 
 prog_1 = ShaderProgram(mesh_shader,frag_shader)
-prog_1_vbo = mesh_vbo(mesh=sphere,prog=prog_1,batch=batch)
+prog_1_vbo = mesh_vbo(mesh=sphere,prog=prog_1)
 prog_2 = ShaderProgram(lift1_shader,frag_shader)
-prog_2_vbo = points_vbo(points=curve_pts,prog=prog_2,batch=batch)
+prog_2_vbo = points_vbo(points=curve_pts,prog=prog_2)
 
 uniforms = {
   "uProjection": persp_proj_mtx(**default_persp_params), # no need to change the default camera parameters
