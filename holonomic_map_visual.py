@@ -1,23 +1,23 @@
 import pyglet.app as app
 from pyglet.graphics.shader import ShaderProgram, Shader
 from pyglet.window import Window
-from pyglet.graphics import Batch
 from pyglet.math import Vec3, Vec2, Mat4
 from glsl_lib import mesh_vbo, points_vbo, persp_proj_mtx, transl_mtx, default_persp_params
 from utils import read_file, proj_file_path
 from mesh_lib import sphere_mesh
 from DataFile import DataFile
-from fourier_curve import tessellate_fourier_pts
+from fourier_curve import angle_and_radial_modulation_curve
 from S2 import stereo_project_R2_R3
 
 
 #pyglet opengl window
 win = Window(width=800, height=600, caption="sphere test", resizable=False)
 
-curve_file_path = proj_file_path("/data/fourier_curves.json")
-curves_file = DataFile(curve_file_path)
-curve_args = curves_file.data["curve_1"]
-curve_pts = tessellate_fourier_pts(**curve_args)
+#curve_file_path = proj_file_path("/data/fourier_curves.json")
+#curves_file = DataFile(curve_file_path)
+#curve_args = curves_file.data["curve_1"]
+curve_args = {"disc_radius":1.0,"dc":1.19,"a":[1.2,0.5,0.1,0.3],"b":[1.9,-1.4,0.1,0.7],"phi":[0.4,0.7,42.2,0.7],"psi":[0.2,0.2,5.14,6.73],"M":3,"res":360}
+curve_pts = angle_and_radial_modulation_curve(**curve_args)
 #print(curve_pts)
 sphere = sphere_mesh(1.0)
 sel_index = 0
@@ -54,6 +54,20 @@ uniforms = {
   "light_mul":0.5 #--||---
 }
 
+
+@win.event
+def on_draw():
+  win.clear()
+  prog_1.use()
+  prog_1_vbo.draw(mode=0)
+  prog_2.use()
+  prog_2_vbo.draw(mode=0)
+
+app.run()
+
+
+
+""""
 def index_change(_id,val):
   global sel_index, curve_args, cam_pos, sel_curve_pt
   sel_index = val
@@ -106,15 +120,8 @@ if __name__ == "__main__":
   #Preset_ctrl = PresetCtrl(plt_ctx,curve_file_path,lambda:args,load_preset)
   plot_pts()
   plt_ctx.run()
-  win = Window(width=800, height=600, caption="sphere test", resizable=False)
-
-  @win.event
-  def on_draw():
-    win.clear()
-    batch.draw()
-    # guibatch.draw()
-
-  app.run()
+  #win = Window(width=800, height=600, caption="sphere test", resizable=False)
+"""
 
 
 
