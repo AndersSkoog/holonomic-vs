@@ -1,4 +1,5 @@
 import numpy as np
+from math import tau, pi, sin, cos
 
 def sphere_mesh(radius=1.0, lat_seg=32, lon_seg=32):
     vertices = []
@@ -30,3 +31,45 @@ def sphere_mesh(radius=1.0, lat_seg=32, lon_seg=32):
             indices += [first, second, first + 1, second, second + 1, first + 1]
 
     return np.array(vertices, dtype=np.float32), np.array(normals, dtype=np.float32), np.array(indices, dtype=np.uint32)
+
+
+def disc_mesh(radius,res1,res2):
+    angles = np.linspace(0,tau,res1)
+    radii = np.linspace(0,radius,res2)
+    vertices = []
+    normals = [[0.0, 0.0, 1.0] for _ in range(res1 * res2)]#costant normals for a flat mesh
+    indices = []
+    for r in radii:
+        for a in angles:
+            vertices.append([r*cos(a),r*sin(a),0.0])
+    for i in range(res2 - 1):
+      for j in range(res1):
+          jn = (j + 1) % res1  # wrap angularly
+          v00 = i * res1 + j
+          v01 = i * res1 + jn
+          v10 = (i + 1) * res1 + j
+          v11 = (i + 1) * res1 + jn
+          # two triangles per quad
+          indices.append([v00, v10, v11])
+          indices.append([v00, v11, v01])
+    return np.array(vertices,dtype=np.float32),np.array(normals,dtype=np.float32),np.array(indices,dtype=np.uint32)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
