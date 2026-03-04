@@ -11,3 +11,6 @@ def read_file(filepath:str) -> str:
   f.close()
   return txt
 
+def adj(l): return [[l[i - 1], l[i]] for i in range(1, len(l))]
+def adjacents(l): return [[l[i], l[i + 1]] for i in range(len(l) - 1)]
+
