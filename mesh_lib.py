@@ -1,6 +1,80 @@
 import numpy as np
-from math import tau, pi, sin, cos,sqrt,atan2
+import triangle as tr
+from math import tau,sin,cos
 from lib import to_polar
+
+def adj(l): return [[l[i - 1], l[i]] for i in range(1, len(l))]
+
+def disc_grid_verts(radius, rad_res, ang_res):
+    ru = radius / rad_res
+    au = tau / ang_res
+    verts = [[0.0, 0.0]]
+    for ri in range(1, rad_res):
+        r = ru * ri
+        for ai in range(ang_res):
+            a = au * ai
+            verts.append([r*cos(a), r*sin(a)])
+    return verts
+
+def disc_boundary(radius, ang_res):
+    angles = np.linspace(0, tau, ang_res, endpoint=False)
+    verts = [[radius*cos(a), radius*sin(a)] for a in angles]
+    edges = [[i, (i+1) % ang_res] for i in range(ang_res)]
+    return verts, edges
+
+def curve_constraints(curve_pts,offset):
+    last_idx = len(curve_pts) - 1
+    curve_closed = curve_pts[0] == curve_pts[last_idx]
+    verts = [[x, y] for x, y, _ in curve_pts]
+    edges = [[offset+(i-1),offset+i] for i in range(1,len(curve_pts))]
+    if curve_closed: edges.append([offset+last_idx,offset+1])
+    return verts, edges
+
+
+def disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts):
+    ru = radius / rad_res
+    # boundary first
+    b_verts, b_edges = disc_boundary(radius, ang_res)
+    # interior grid
+    g_verts = disc_grid_verts(radius-ru,rad_res-1,ang_res)
+    verts = b_verts + g_verts
+    # curve
+    offset = len(verts)
+    c_verts, c_edges = curve_constraints(curve_pts, offset)
+    verts += c_verts
+    edges = b_edges + c_edges
+    A = dict(
+        vertices=np.array(verts),
+        segments=np.array(edges)
+    )
+    B = tr.triangulate(A, 'pq30')
+    verts2d = B['vertices']
+    triangles = B['triangles']
+    # lift to 3D
+    verts3d = [[x, y, 0.0] for x, y in verts2d]
+    normals = [[0.0, 0.0, 1.0] for _ in verts3d]
+    #curve_verts = verts3d[offset:len(verts3d)]
+    return verts3d, triangles, normals, offset
+
+
+def surface_from_disc_curve(radius, rad_res, ang_res, curve_pts, amplitude=1.0):
+    d_verts, d_triangles, d_normals, curve_start_idx = disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts)
+    curve_count = len(curve_pts)
+    curve_indices = range(curve_start_idx,len(d_verts))
+    # Compute cumulative arc length along the curve
+    arc_len = [0.0]
+    for i in range(1, curve_count):
+        p0 = np.array(d_verts[curve_indices[i-1]][:2])
+        p1 = np.array(d_verts[curve_indices[i]][:2])
+        arc_len.append(arc_len[-1] + np.linalg.norm(p1 - p0))
+    arc_len = np.array(arc_len)
+    total_len = arc_len[-1]
+    t = arc_len / total_len  # normalize to [0,1]
+    # Apply sine height function
+    for i, vi in enumerate(curve_indices):
+        d_verts[vi][2] = amplitude * np.sin(np.pi * t[i])
+
+    return d_verts, d_triangles, d_normals
 
 def sphere_mesh(radius=1.0, lat_seg=32, lon_seg=32):
     vertices = []
@@ -33,7 +107,7 @@ def sphere_mesh(radius=1.0, lat_seg=32, lon_seg=32):
 
     return vertices,normals,indices
 
-
+"""
 def disc_mesh(radius,ang_res,rad_res):
     ru = radius / rad_res # concentric radius unit
     au = tau / ang_res # angular unit for calculating evenly spaced vertices along a circle
@@ -118,9 +192,29 @@ def disc_mesh_with_surface_curve(radius, ang_res, rad_res, curve_pts):
     return disc_vertices, disc_normals, disc_indices
 
 
+def surface_from_disc_curve(radius, rad_res, ang_res, curve_pts, amplitude=1.0):
+    d_verts, d_triangles, d_normals, curve_start_idx = \
+        disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts)
 
+    curve_count = len(curve_pts)
+    curve_indices = range(curve_start_idx, curve_start_idx + curve_count)
 
+    # Compute cumulative arc length along the curve
+    arc_len = [0.0]
+    for i in range(1, curve_count):
+        p0 = np.array(d_verts[curve_indices[i-1]][:2])
+        p1 = np.array(d_verts[curve_indices[i]][:2])
+        arc_len.append(arc_len[-1] + np.linalg.norm(p1 - p0))
+    arc_len = np.array(arc_len)
+    total_len = arc_len[-1]
+    t = arc_len / total_len  # normalize to [0,1]
 
+    # Apply sine height function
+    for i, vi in enumerate(curve_indices):
+        d_verts[vi][2] = amplitude * np.sin(np.pi * t[i])
+
+    return d_verts, d_triangles, d_normals
+"""
 
 
 
