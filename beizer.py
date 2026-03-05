@@ -22,3 +22,13 @@ def cubic_bezier(P0, P1, P2, P3, t):
 def sample_cubic(P0, P1, P2, P3, n=200):
     ts = np.linspace(0.0, 1.0, n)
     return np.array([cubic_bezier(P0, P1, P2, P3, t) for t in ts])
+
+
+def beizer_curve_3d(xy_ctrlpts,z_ctrlpts,n):
+  xy_curve = sample_bezier(xy_ctrlpts,n)
+  z_curve = sample_bezier(z_ctrlpts,n)
+  return [[xy_curve[i][0],xy_curve[i][1],z_curve[i][1]] for i in range(n)]
+
+
+
+
