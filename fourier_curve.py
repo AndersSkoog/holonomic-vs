@@ -57,6 +57,14 @@ def angle_and_radial_modulation_curve(disc_radius,dc,a,phi,b,psi,M,res,**kwargs)
     theta_vals = tau * M * t_vals + np.array([fourier_series(0, phi_scaled, psi_scaled, t) for t in t_vals])
     return [[r * cos(theta),r * sin(theta)] for r,theta in zip(r_vals,theta_vals)]
 
+
+def angle_and_radial_modulation_curve_3d(curve_args1,curve_args2):
+  xy_curve = angle_and_radial_modulation_curve(**curve_args1)
+  z_curve = angle_and_radial_modulation_curve(**curve_args2)
+  l = len(xy_curve)
+  return [[xy_curve[i][0],xy_curve[i][1],z_curve[i][2]] for i in range(l)]
+
+
 if __name__ == "__main__":
   from PlotContext import PlotContext
   from tkiter_widgets import FloatSlider,IntSlider, NumberListEntry, SelectBox
