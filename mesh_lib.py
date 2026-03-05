@@ -24,11 +24,13 @@ def disc_boundary(radius, ang_res):
 
 def curve_constraints(curve_pts,offset):
     last_idx = len(curve_pts) - 1
-    curve_closed = curve_pts[0] == curve_pts[last_idx]
-    verts = [[x, y] for x, y, _ in curve_pts]
+    sx,sy = curve_pts[0]
+    lx,ly = curve_pts[-1]
+    curve_closed = (sx==lx) and (sy==ly)
+    #verts = [ in curve_pts]
     edges = [[offset+(i-1),offset+i] for i in range(1,len(curve_pts))]
     if curve_closed: edges.append([offset+last_idx,offset+1])
-    return verts, edges
+    return curve_pts, edges
 
 
 def disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts):
@@ -41,7 +43,7 @@ def disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts):
     # curve
     offset = len(verts)
     c_verts, c_edges = curve_constraints(curve_pts, offset)
-    verts += c_verts
+    verts.extend(c_verts)
     edges = b_edges + c_edges
     A = dict(
         vertices=np.array(verts),
@@ -60,7 +62,7 @@ def disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts):
 def surface_from_disc_curve(radius, rad_res, ang_res, curve_pts, amplitude=1.0):
     d_verts, d_triangles, d_normals, curve_start_idx = disc_mesh_with_curve(radius, rad_res, ang_res, curve_pts)
     curve_count = len(curve_pts)
-    curve_indices = range(curve_start_idx,len(d_verts))
+    curve_indices = range(curve_start_idx, curve_start_idx + curve_count)
     # Compute cumulative arc length along the curve
     arc_len = [0.0]
     for i in range(1, curve_count):
@@ -106,6 +108,50 @@ def sphere_mesh(radius=1.0, lat_seg=32, lon_seg=32):
             indices += [first, second, first + 1, second, second + 1, first + 1]
 
     return vertices,normals,indices
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from random import uniform
+    from beizer import bezier_curve, sample_bezier
+    from mpl_toolkits.mplot3d import Axes3D  # needed for 3D projection
+
+    def rnd_pt(radius):
+      return [uniform(-radius,radius),uniform(-radius,radius)]
+
+    def rnd_curve(radius,n):
+      ctrl_pts = [rnd_pt(radius) for _ in range(n)]
+      return sample_bezier(ctrl_pts)
+
+    verts_,triangles_,normals_ = surface_from_disc_curve(
+        radius=1.0,
+        rad_res=20,
+        ang_res=32,
+        curve_pts=rnd_curve(1.0,10),
+        amplitude=0.2
+    )
+
+    # Unpack x, y, z
+    x = [v[0] for v in verts_]
+    y = [v[1] for v in verts_]
+    z = [v[2] for v in verts_]
+
+    # Triangles for plot_trisurf need a flat array of indices
+    tri_indices = [t for t in triangles_]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.plot_trisurf(x, y, z, triangles=tri_indices, cmap='viridis', edgecolor='gray', linewidth=0.2)
+
+    ax.set_box_aspect([1, 1, 0.5])  # optional: adjust aspect ratio
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+
+    plt.show()
+
+
+
 
 """
 def disc_mesh(radius,ang_res,rad_res):

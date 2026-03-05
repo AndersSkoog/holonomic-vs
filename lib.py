@@ -1,9 +1,16 @@
 import numpy as np
 from itertools import combinations
-from math import tau, pi
+from math import tau, pi, sqrt,atan2
 
 angles = np.linspace(0,tau,360)
 t01_100 = np.linspace(0,1,100)
+
+def to_polar(p):
+  x,y = p
+  r = sqrt(pow(x,2)+pow(y,2))
+  ang = atan2(y,x)
+  return [r,ang]
+
 
 def axis_pairs(dim): return list(combinations(range(dim),2))
 
