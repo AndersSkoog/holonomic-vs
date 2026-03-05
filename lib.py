@@ -5,6 +5,27 @@ from math import tau, pi, sqrt,atan2
 angles = np.linspace(0,tau,360)
 t01_100 = np.linspace(0,1,100)
 
+
+def distance(A,B):
+  assert np.shape(A) == np.shape(B), "A and B must have same shape"
+  assert np.shape(A) in ((3,),(2,)), "A and B must be 2d or 3d points"
+  if np.shape(A) == (3,):
+    x1,y1,z1 = A
+    x2,y2,z2 = B
+    px,py,pz = pow(abs(x2-x1),2),pow(abs(y2-y1),2),pow(abs(z2-z1),2)
+    return sqrt(px+py+pz)
+  else:
+    x1,y1 = A
+    x2,y2 = B
+    px, py = pow(abs(x2 - x1), 2), pow(abs(y2 - y1), 2)
+    return sqrt(px+py)
+
+
+
+
+
+
+
 def to_polar(p):
   x,y = p
   r = sqrt(pow(x,2)+pow(y,2))
@@ -48,7 +69,7 @@ def antipodes(p):
   ]
 
 def orthogonal_ref(plane):
-    return [[0,0,1],[0,1,0],[1,0,0]][["xy","xz","yz"].index(plane)]
+    return [[0.0,0.0,1.0],[0.0,1.0,0.0],[1.0,0.0,0.0]][["xy","xz","yz"].index(plane)]
 
 def orthonormal_u(p,direction):
   ref = orthogonal_ref(direction)
@@ -57,6 +78,25 @@ def orthonormal_u(p,direction):
 def orthonormal_v(p,direction):
   u = orthonormal_u(p,direction)
   return normalize_vector(np.cross(p,u))
+
+
+def orthonormal_basis(p):
+    p = normalize_vector(p)
+    # choose reference vector not parallel to p
+    if abs(p[0]) < 0.9:
+        ref = np.array([1.0,0.0,0.0])
+    else:
+        ref = np.array([0.0,1.0,0.0])
+
+    u = normalize_vector(np.cross(p, ref))
+    v = normalize_vector(np.cross(p, u))
+
+    return u, v
+
+
+
+
+
 
 def NxN_id_f16(N:int):return np.eye(N,dtype=np.float16)
 def NxN_id_f32(N:int):return np.eye(N,dtype=np.float32)
