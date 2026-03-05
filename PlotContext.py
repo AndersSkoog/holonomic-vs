@@ -92,6 +92,16 @@ class PlotContext:
               self.ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]], color=col, linewidth=lw)
             self.canvas.draw()
 
+    def plot_frame(self,pos,rot_mtx,scale):
+        origin = np.array(pos)
+        x_axis = origin + rot_mtx[:, 0] * scale  # Forward
+        y_axis = origin + rot_mtx[:, 1] * scale  # Right
+        z_axis = origin + rot_mtx[:, 2] * scale  # Up
+        self.ax.quiver(*origin, *(x_axis - origin), color='r', length=scale, normalize=True)
+        self.ax.quiver(*origin, *(y_axis - origin), color='g', length=scale, normalize=True)
+        self.ax.quiver(*origin, *(z_axis - origin), color='b', length=scale, normalize=True)
+
+
 
     def run(self):
         self.root.mainloop()
