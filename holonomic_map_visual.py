@@ -23,8 +23,19 @@ sphere = sphere_mesh(1.0)
 sel_index = 0
 sel_curve_pt = curve_pts[sel_index]
 cam_pos = Vec3(*stereo_project_R2_R3(p=sel_curve_pt,R=3.0))
-orgin = Vec3(0.0,0.0,0.0)
+origin = Vec3(0.0,0.0,0.0)
 up = Vec3(0.0,0.0,1.0)
+
+uniforms = {
+  "uProjection": persp_proj_mtx(**default_persp_params), # no need to change the default camera parameters
+  "uModel": transl_mtx([0.0,0.0,0.0]), # always center world at the orgin
+  "uView":Mat4.look_at(cam_pos,origin,up), # up direction will always be [0,0,1]
+  "point_color": Vec3(1.0, 1.0, 1.0), # color for the drawn points is black
+  "sel_disc_point":Vec2(sel_curve_pt[0],sel_curve_pt[1]), # will change according to the selected index of the disc points
+  "mesh_color":Vec3(0.1,0.3,0.5), # the color of the mesh will be something light to contrast the black
+  "light_add":0.8, #parameter for controlling the light in the fragment shader
+  "light_mul":0.5 #--||---
+}
 
 frag_shader_path = proj_file_path("/glsl/light_and_color.frag")
 frag_shader_str = read_file(frag_shader_path)
@@ -43,16 +54,26 @@ prog_1_vbo = mesh_vbo(mesh=sphere,prog=prog_1)
 prog_2 = ShaderProgram(lift1_shader,frag_shader)
 prog_2_vbo = points_vbo(points=curve_pts,prog=prog_2)
 
-uniforms = {
-  "uProjection": persp_proj_mtx(**default_persp_params), # no need to change the default camera parameters
-  "uModel": transl_mtx([0.0,0.0,0.0]), # always center world at the orgin
-  "uView":Mat4.look_at(cam_pos,orgin,up), # up direction will always be [0,0,1]
-  "uCol": Vec3(255, 255, 255), # color for the drawn points is black
-  "sel_disc_pont":Vec2(sel_curve_pt[0],sel_curve_pt[1]), # will change according to the selected index of the disc points
-  "mesh_col":Vec3(10,30,50), # the color of the mesh will be something light to contrast the black
-  "light_add":0.8, #parameter for controlling the light in the fragment shader
-  "light_mul":0.5 #--||---
-}
+def set_uniforms():
+ prog_1_uniform_keys = ["uView","uProjection","uModel","mesh_color","light_add","light_mul"]
+ prog_2_uniform_keys = ["uView","uProjection","uModel","sel_disc_point","uCol","light_add","light_mul"]
+ for k in prog_1_uniform_keys:
+   prog_1[k] = uniforms[k]
+ for k in prog_2_uniform_keys:
+   prog_2[k] = uniforms[k]
+
+def change_disc_point_index(index):
+  global sel_index, curve_args, cam_pos, sel_curve_pt
+  sel_index = index
+  sel_curve_pt = curve_pts[sel_index]
+  cam_pos = Vec3(*stereo_project_R2_R3(sel_curve_pt,3.0))
+  uniforms["uView"] = Mat4.look_at(cam_pos,origin,up)
+  uniforms["sel_disc_point"] = Vec2(sel_curve_pt[0],sel_curve_pt[1])
+  prog_1["uView"] = uniforms["uView"]
+  prog_2["uView"] = uniforms["uView"]
+  prog_2["sel_disc_point"] = uniforms["sel_disc_point"]
+
+set_uniforms()
 
 
 @win.event

@@ -2,7 +2,8 @@ import numpy as np
 from pyglet.math import Mat4, Vec3, Vec4, Vec2
 from pyglet.graphics.shader import ShaderProgram
 from pyglet.gl import GL_TRIANGLES, GL_POINTS, GL_LINES
-from pyglet.graphics import Batch
+#from pyglet.graphics import Batch
+
 
 default_persp_params = {
   "fov":np.radians(60), # 60 degree field of view
