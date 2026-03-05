@@ -127,9 +127,6 @@ def torsion_curve_arc(pos_start, frame_start, pos_end, frame_end,
     return np.array(pts)
 
 
-import numpy as np
-
-
 def torsion_curve(pos_start, frame_start, pos_end, frame_end, t_value, helix_radius=0.1, axis_index=2, num_points=50):
     """
     Compute points along the torsion curve induced by SLERP between two frames.
