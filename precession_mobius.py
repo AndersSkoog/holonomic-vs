@@ -17,7 +17,6 @@ def deserialize_coef(coef:mobius_coef_ser) -> mobius_coef:
     return complex(a[0],a[1]),complex(b[0],b[1]),complex(c[0],c[1]),complex(d[0],d[1])
 
 
-
 def mobius_trans(z: complex, a: complex, b: complex, c: complex, d: complex) -> complex:
     """General Möbius transformation"""
     denominator = (c * z) + d
@@ -26,9 +25,32 @@ def mobius_trans(z: complex, a: complex, b: complex, c: complex, d: complex) -> 
     return ((a * z) + b) / denominator
 
 
-def apply_mobius_trans(points:Sequence[complex],coef:mobius_coef):
+def mobius_transl(z: complex, b: complex) -> complex:
+    return mobius_trans(z, a=1+0j, b=b, c=0+0j, d=1+0j)
+
+def mobius_scale(z: complex, a: complex):
+    return mobius_trans(z, a=a, b=0+0j, c=0+0j, d=1+0j)
+
+def mobius_inv(z):
+    if z == 0:
+        return complex('inf')
+    return mobius_trans(z, a=0+0j, b=1+0j, c=1+0j, d=0+0j)
+
+def mobius_rot(z, ang):
+    a = cmath.exp(1j * ang)
+    return mobius_trans(z, a=a, b=0+0j, c=0+0j, d=1+0j)
+
+
+def apply_mobius_trans(points:Sequence[complex],coef:mobius_coef,R):
   a,b,c,d = coef
-  return [mobius_trans(p,a,b,c,d) for p in points]
+  out = []
+  for p in points:
+    z = mobius_trans(p,a,b,c,d)
+    r = abs(z)
+    #if r > R: z = z / (1 + (r - R))
+    #if r > R: z = z / r * R  # clamp to disc boundary
+    out.append(z)
+  return out
 
 
 def rotation_to_mobius(alpha: float, theta: float) -> Tuple[complex, complex]:
@@ -101,7 +123,7 @@ if __name__ == "__main__":
     disc_radius = fourier_curve_params["disc_radius"]
     precession_coefs = None
     if precession_coefs_file.has_key("tilt1"):
-        precession_coefs_serialized = precession_coefs_file.load("tilt1")["coefs"]
+        precession_coefs_serialized = precession_coefs_file.load("tilt2")["coefs"]
         precession_coefs = [deserialize_coef(coef) for coef in precession_coefs_serialized]
     else:
       precession_tilt = radians(22.5)
@@ -109,7 +131,7 @@ if __name__ == "__main__":
       precession_coefs_serialized = [serialize_coef(coef) for coef in precession_coefs]
       precession_coefs_file.save("tilt1",{"tilt_angle":22.5,"res":4,"coefs":precession_coefs_serialized})
 
-    frames = [apply_mobius_trans(fourier_curve_cmplx,coefs) for coefs in precession_coefs]
+    frames = [apply_mobius_trans(fourier_curve_cmplx,coefs,disc_radius) for coefs in precession_coefs]
     frame_cnt = len(frames)
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
@@ -126,7 +148,7 @@ if __name__ == "__main__":
     limit = disc_radius + padding
 
     # Draw the reference circle
-    circle = plt.Circle((0, 0), disc_radius, fill=False, color='red', linestyle='--', linewidth=1)
+    circle = plt.Circle((0, 0), disc_radius, fill=False, color='black',linewidth=1)
     ax.add_patch(circle)
 
     # Draw axes
