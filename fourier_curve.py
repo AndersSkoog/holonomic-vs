@@ -1,8 +1,9 @@
 from math import tau, cos, sin
 import numpy as np
 import cmath
-from DataFile import DataFile
-from utils import proj_file_path
+#from DataFile import DataFile
+#from old.draw_beizer import preset_ctrl
+#from utils import proj_file_path
 
 def fourier_series_trunc(dc, a, b, k, t):
     """
@@ -67,10 +68,14 @@ def angle_and_radial_modulation_curve_3d(curve_args1,curve_args2):
 
 if __name__ == "__main__":
   from PlotContext import PlotContext
-  from tkiter_widgets import FloatSlider,IntSlider, NumberListEntry, SelectBox
+  from tkiter_widgets import FloatSlider,IntSlider, NumberListEntry, SelectBox, PresetCtrl
+  from pathlib import Path
+  #from DataFile import DataFile
+  BASE_DIR = Path(__file__).resolve().parent
+
   pctx = PlotContext(-1, 1, "fourier curves", proj="2d")
   args = {"disc_radius":1.0,"dc":0.6,"a":[0.2,0.5,0.7,0.3],"b":[0.9,0.4,0.1,0.7],"phi":[0.4,0.7,0.2,0.7],"psi":[0.7,0.2,0.34,0.73],"M":1,"res":360}
-  curve_func_key = "radial_modulation"
+  curve_func_key = "angle_and_radial_modulation"
   func_dict = {
       "radial_modulation":radial_modulation_curve,
       "angle_modulation":angle_modulation_curve,
@@ -94,6 +99,15 @@ if __name__ == "__main__":
     pts = func_dict[curve_func_key](**args)
     plot_pts()
 
+  def load_preset(data):
+    print(data)
+    global args,pts,circ
+    args = data
+    circ = [[args["disc_radius"] * cos(a), args["disc_radius"] * sin(a)] for a in np.linspace(0, tau, 360)]
+    pts = func_dict[curve_func_key](**args)
+    plot_pts()
+
+
   fn_sel = SelectBox(pctx,"curve_func","curve_func",list(func_dict.keys()),arg_change)
   radius_wid = FloatSlider(pctx,"disc_radius","disc_radius",0.01,5.0,1.0,arg_change)
   dc_wid = FloatSlider(pctx,"dc","dc",0.01,5.0,0.6,arg_change)
@@ -102,8 +116,7 @@ if __name__ == "__main__":
   b_wid = NumberListEntry(pctx,"a","b",args["b"],"float",arg_change)
   phi_wid = NumberListEntry(pctx,"phi","phi",args["phi"],"float",arg_change)
   psi_wid = NumberListEntry(pctx,"psi","psi",args["psi"],"float",arg_change)
-
-
+  preset_ctrl = PresetCtrl(pctx,str(BASE_DIR)+"/data/fourier_curves.json",lambda: args,load_preset)
   pctx.run()
 
 
