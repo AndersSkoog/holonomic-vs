@@ -26,7 +26,6 @@ def sector_sign(a,d):
 def curve_step(a_start, j, r, au, direction):
   # current angle along the segment
   theta = a_start + (direction * (au * j))
-  # displacement along circle tangent (approximated)
   dx = r * (cos(theta + pi/2) - cos(theta))
   dy = r * (sin(theta + pi/2) - sin(theta))
   return dx, dy
