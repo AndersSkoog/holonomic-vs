@@ -25,8 +25,10 @@ class PlotContext:
         self.plot_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         self.fig = None
         self.ax = None
+        self.line = None
         if proj == "2d":
             self.fig, self.ax = plt.subplots()
+            self.line = self.ax.plot([], [])[0]
             plt.xlim((dmin,dmax))
             plt.ylim((dmin, dmax))
             self.ax.set_autoscale_on(False)
