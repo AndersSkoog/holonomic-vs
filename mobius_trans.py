@@ -1,7 +1,12 @@
 from math import cos, sin,acos,pi,tau,radians,sqrt,atan
+import constants
+import cosmic_date
 from typing import List, Tuple, Sequence
 import numpy as np
 import cmath
+
+from constants import PRECESSION_ANGLE_SEC, SECS_IN_DAY, SPIN_ANGLE_SEC
+from cosmic_date import CosmicDate, precession_angle
 
 cmplx_ser = Tuple[float,float] # serialized complex number
 unitvec3 = Tuple[float,float,float]
@@ -90,6 +95,10 @@ orient_vec3 (theta,phi,psi)
 theta  → where axis points around z
 phi    → how much thet axis tilts
 psi    → rotation around that axis
+
+theta – azimuth of the rotation axis (longitude)
+phi – polar angle of the axis (colatitude, 0 = north pole)
+psi – rotation angle around that axis (the “spin”)
 """
 
 def mobius_trans(z: complex,coef:mobius_coef) -> complex:
@@ -113,6 +122,27 @@ def apply_mobius_trans(points:Sequence[complex],coef:mobius_coef):
     #if r > R: z = z / r * R  # clamp to boundary
     out.append(z)
   return out
+
+
+def earth_rotation_day_animation(points,date:cosmic_date.CosmicDate):
+  assert cosmic_date.valid_date(date),"date not valid"
+  frame_cnt = constants.SECS_IN_DAY
+  start_date = date
+  start_date_in_sec = cosmic_date.cosmic_date_in_seconds(date)
+  end_date_in_sec = start_date_in_sec + SECS_IN_DAY
+  precession_angle_start = PRECESSION_ANGLE_SEC * start_date_in_sec
+  precession_angle_end = PRECESSION_ANGLE_SEC * end_date_in_sec
+  start_sec = start_date_in_sec % SECS_IN_DAY
+  end_sec = (start_sec + SECS_IN_DAY) % SECS_IN_DAY
+  spin_angle_start = SPIN_ANGLE_SEC * start_sec
+  frames = []
+  for i in range(frame_cnt):
+    theta = precession_angle_start + (PRECESSION_ANGLE_SEC * i)
+    phi = constants.PHI
+    psi = (spin_angle_start + (SPIN_ANGLE_SEC * i)) % constants.TAU
+    coef = orient_to_mobius_coef((theta,phi,psi))
+    frames.append(apply_mobius_trans(points,coef))
+  return frames
 
 
 """

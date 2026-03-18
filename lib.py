@@ -1,9 +1,16 @@
 import numpy as np
 from itertools import combinations
-from math import tau, pi, sqrt,atan2
+from math import tau, pi, sqrt,atan2,radians
 
 angles = np.linspace(0,tau,360)
 t01_100 = np.linspace(0,1,100)
+golden_ratio = (1+sqrt(5)) / 2
+
+def golden_ratio_division(whole): return whole/golden_ratio,whole-(whole/golden_ratio)
+
+earth_tilt = radians(golden_ratio_division(360)[0] / 10)
+
+
 
 
 def distance(A,B):
@@ -19,12 +26,6 @@ def distance(A,B):
     x2,y2 = B
     px, py = pow(abs(x2 - x1), 2), pow(abs(y2 - y1), 2)
     return sqrt(px+py)
-
-
-
-
-
-
 
 def to_polar(p):
   x,y = p
