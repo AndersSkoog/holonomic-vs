@@ -90,6 +90,11 @@ def orient_to_mobius_coef(orient_angles: orient_vec3) -> mobius_coef:
   d = a.conjugate()
   return a,b,c,d
 
+def orient_to_SO3(orient_angles: orient_vec3):
+
+
+
+
 """
 orient_vec3 (theta,phi,psi)
 theta  → where axis points around z
