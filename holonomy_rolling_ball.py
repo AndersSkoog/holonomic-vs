@@ -37,7 +37,7 @@ def RollTranslation(L:Sequence[vec3], i:int, o:quat, p:vec3, R:float):
 
 
 def z_from_orient(O,R):
-  pole = np.array([0.0,0.0,1.0]) @ orient
+  pole = np.array([0.0,0.0,1.0]) @ O
   return R * pole[2]
   
 

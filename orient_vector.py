@@ -59,7 +59,7 @@ def orient_to_SO3(orient_angles: orient_vec3):
 def orient_to_SU2(orient_angles: orient_vec3):
   axis = direction_axis(orient_angles)
   angle = orient_angles[2]
-  return SU2.SU2(axis,angle)
+  return SU2(axis,angle)
 
 
 
