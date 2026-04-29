@@ -6,14 +6,15 @@ provided that we know the rules for converting between them.
 """
 import SO
 import SU2
-from types import orient_vec3, unitvec3, vec3, unitquat, quat, orient_axis_ang, zpair, mobius_coef
+from mytypes import orient_vec3, unitvec3, vec3, unitquat, quat, orient_axis_ang, zpair, mobius_coef
 from SO import Rx, Ry, Rz
 from SU2 import SU2
-from math import cos, sin
+from math import cos, sin, sqrt
 import numpy as np
 
 def vec3_to_unitvec3(v:vec3) -> unitvec3:
-  x,y,z = np.asarray(v) / np.linalg.norm(v)
+  a = np.asarray(v)
+  x,y,z = a / np.linalg.norm(a)
   return x,y,z
 
 def direction_axis(orient_angles:orient_vec3) -> unitvec3:
@@ -25,7 +26,7 @@ def direction_axis(orient_angles:orient_vec3) -> unitvec3:
 
 def quat_to_unitquat(q:quat) -> unitquat:
   w,i,j,k = q
-  n = np.sqrt((w*w)+(i*i)+(j*j)+(k*k))
+  n = sqrt((w*w)+(i*i)+(j*j)+(k*k))
   return w/n,i/n,j/n,k/n
 
 def axis_ang(orient_angles:orient_vec3) -> orient_axis_ang:

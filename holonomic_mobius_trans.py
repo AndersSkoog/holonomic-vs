@@ -1,12 +1,41 @@
 import numpy as np
-from constants import MIN_VAL
+from constants import MIN_VAL, TAU, PI
+from math import sin, cos, tan, acos, atan2
 from mobius_trans import apply_mobius_trans
 from SO import SO_3
 from S2 import S2_to_R3
 from typing import Sequence
 
-def to_points(L:Sequence[complex]): -> Sequence[(float,float)] return [(p.real,p.imag) for p in L]
-def to_cmplx(L:Sequence[(float,float)]) -> Sequence[complex]: return [complex(p[0],p[1]) for p in L]
+fov = sin(PI / 5)
+gamma = arccos(4/5)
+lambd = tan(gamma/2)
+npole = np.array([0.0,0.0,1.0])
+
+def to_points(L:Sequence[complex]): -> Sequence[(float,float)] return [np.array([p.real,p.imag]) for p in L]
+def to_cmplx(L) -> Sequence[complex]: return [complex(p[0],p[1]) for p in L]
+
+
+def plane_to_sphere(p):
+ x,y = p
+ r = (x*x)+(y*y)
+ d = r + 1
+ sx,sy,sz = 2 * (x/d), 2 * (y/d), (r-1)/d
+ return np.array([sx,sy,-sz])
+
+
+def view_sphere_circle(D,index):
+ p = D[index]
+ sp = plane_to_sphere(p)
+ c = sp - (sp/5)
+ xp = np.cross(sp,npole)
+ u = xp / np.linalg.norm(xp)
+ v = np.cross(p,u)
+ uh,vh = fov * u, fov * v
+ uhx,uhy,uhz = uh[0],uh[1],uh[2]
+ vhx,vhy,vhz = vh[0],vh[1],vh[2]
+ t = np.linspace(0,TAU,360)
+ out = [c + np.array([uhx * cos(ts) + vhx * sin(ts),uhy * cos(ts) - vhy * sin(ts)),vhz * sin(ts)] for ts in t]
+ return out
 
 
 def s2pt_to_mobius_coef(s2pt):
@@ -38,28 +67,32 @@ def boundryless_disc_transform(z:complex,coefs:(complex,complex,complex,complex)
  else: return 1 / np.conj(z1) # if z is outside or on disc circle boundry, return the inversion of the mobius transform of z
 
 
-def inv_stereographic_proj(p:(float,float),R:float):
-  x, y = p[0], p[1]
-  r2 = x*x + y*y
-  d = r2 + R*R
-  X = 2*R*x/d
-  Y = 2*R*y/d
-  Z = (r2 - R*R)/d
-  return np.array([X,Y,Z])
-
-
 #D is a continous curve in the disc, D[index] is an element in that curve.
 def holonomic_rearrangement(D,index):
   Di = D[index]
   C = to_cmplx(D) #convert D to complex
-  s2pt = inv_stereographic_proj(Di,1) #sphere point associated to Di
-  #theta = np.arctan2(sy,sx)  # longitude of sphere point
+  Si = plane_to_sphere(D,index) #sphere point associated to Di
+  #theta = atan2(,sx)  # longitude of sphere point
   #phi = np.sign(y)*np.arccos(sz)  #colatitude of sphere point
-  coefs = s2pt_to_mobius_coef(s2pt)
-  out = [boundryless_disc_transform(z,coefs) for z in C]
-  return out
+  coefs = s2pt_to_mobius_coef(Si)
+  return [boundryless_disc_transform(z,coefs) for z in C]
 
 
+def holonomic_view3(D,index):
+  sp = plane_to_sphere(D,index)
+  theta = atan2(sp[1],sp[0])
+  phi = acos(sp[2])
+  so = SO_3(theta,phi,0.0)
+  trans_pts = to_points(holonomic_rearrangement(D,index))
+  scaled_pts = [lambd * p for p in trans_pts]
+  lift_pts = [plane_to_sphere(p) for p in scaled_pts]
+  rot_pts = lift_pts @ so
+  return rot_pts
+
+
+
+
+""""
 def holonomic_view3(D, index):
     D_i = D[index]
     C = to_cmplx(D)
@@ -90,7 +123,7 @@ def holonomic_view3(D, index):
         "persp_pos": persp_i,
         "persp_view": D_trans_proj_rot
     }
-
+"""
 
 
 

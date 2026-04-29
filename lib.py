@@ -10,6 +10,17 @@ def golden_ratio_division(whole): return whole/golden_ratio,whole-(whole/golden_
 
 earth_tilt = radians(golden_ratio_division(360)[0] / 10)
 
+def adj(l): return [[l[i - 1], l[i]] for i in range(1, len(l))]
+def adjacents(l): return [[l[i], l[i + 1]] for i in range(len(l) - 1)]
+
+def periodic_array(arr):
+  l = len(arr)
+  a = list(arr)
+  return a + a[-2::-1][:l-2]
+
+def non_dup_reverse_array(arr):
+  l = len(arr)
+  return arr[-2::-1][:l-2]
 
 
 
