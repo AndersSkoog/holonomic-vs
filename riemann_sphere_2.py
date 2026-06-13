@@ -94,16 +94,6 @@ class riemann_sphere_coord:
   def xi(self): return complex(self._x,-self._y) / (1 + self.z)
 
   @property
-  def cmplx_disc_point(self):
-    if self.at_inf: return complex(0,0)
-    return self.xi if self._spart[2] == 1 else self.zeta
-
-  @property
-  def cmplx_plane_point(self):
-    if self.at_inf: return complex(inf,inf)
-    return self.zeta if self._spart[2] == 1 else self.xi
-
-  @property
   def north_a(self): return np.array([inf,inf,inf]) if self.at_inf else np.array([self._x,self._y,self._z])
 
   @property
@@ -126,6 +116,7 @@ class riemann_sphere_coord:
 
   @property
   def south_d(self): return np.array([0.0,0.0,-1.0)]) if self.at_inf else np.array(self._x,-self._y,-self._z)
+
 
   def mobius_coef(self,angle):
     x,y,z = self.x,self.y,self.z
