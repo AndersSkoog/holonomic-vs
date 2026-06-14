@@ -3,6 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+from math import cos, sin, pi, tau
+
+sphere_theta,sphere_phi = np.meshgrid(np.linspace(0,tau,180),np.linspace(0,pi,180))
+
 
 def detect_shape(data):
     shape = np.shape(data)
@@ -95,13 +99,32 @@ class PlotContext:
             self.canvas.draw()
 
     def plot_frame(self,pos,rot_mtx,scale):
-        origin = np.array(pos)
-        x_axis = origin + rot_mtx[:, 0] * scale  # Forward
-        y_axis = origin + rot_mtx[:, 1] * scale  # Right
-        z_axis = origin + rot_mtx[:, 2] * scale  # Up
-        self.ax.quiver(*origin, *(x_axis - origin), color='r', length=scale, normalize=True)
-        self.ax.quiver(*origin, *(y_axis - origin), color='g', length=scale, normalize=True)
-        self.ax.quiver(*origin, *(z_axis - origin), color='b', length=scale, normalize=True)
+      origin = np.array(pos)
+      x_axis = origin + rot_mtx[:, 0] * scale  # Forward
+      y_axis = origin + rot_mtx[:, 1] * scale  # Right
+      z_axis = origin + rot_mtx[:, 2] * scale  # Up
+      self.ax.quiver(*origin, *(x_axis - origin), color='r', length=scale, normalize=True)
+      self.ax.quiver(*origin, *(y_axis - origin), color='g', length=scale, normalize=True)
+      self.ax.quiver(*origin, *(z_axis - origin), color='b', length=scale, normalize=True)
+
+
+    def plot_sphere(self,center=np.array([0.0,0.0,0.0]),radius=1.0,color="grey",opacity=0.2):
+      #cx,cy,cz = center[0],center[1],center[2]
+      x = center[0] + radius * np.sin(sphere_phi)*np.cos(sphere_theta)
+      y = center[1] + radius * np.sin(sphere_phi)*np.sin(sphere_theta)
+      z = center[2] + radius * np.cos(sphere_phi)
+      self.ax.plot_surface(x,y,z,color=color,alpha=opacity)
+      self.canvas.draw()
+
+
+
+
+
+
+
+
+
+
 
 
 

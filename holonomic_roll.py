@@ -11,7 +11,7 @@ def normalize(v):
   return v / n
 
 
-def direction(r,theta,phi):
+def s2_to_r3(r,theta,phi):
   x = r * np.sin(phi) * np.cos(theta)
   y = r * np.sin(phi) * np.sin(theta)
   z = r * np.cos(phi)
@@ -44,12 +44,11 @@ def quat_rotate(q, v):
 
 def random_closed_sphere_curve(n=360, k=5, r=0.1, seed=None):
     rng = np.random.default_rng(seed)
-    t = np.linspace(0, 2*np.pi, n, endpoint=False)
+    t = np.linspace(0, 2*np.pi, n)
     theta = np.zeros(n)
     phi = np.zeros(n)
 
-    for i in range(1, k+1):               # sum over harmonics
-        # random amplitudes and phases for theta and phi separately
+    for i in range(1, k+1):
         A_theta, B_theta = rng.normal(size=2)
         A_phi, B_phi = rng.normal(size=2)
         phase_theta = rng.uniform(0, 2*np.pi)
@@ -59,42 +58,18 @@ def random_closed_sphere_curve(n=360, k=5, r=0.1, seed=None):
         phi   += A_phi   * np.cos(i*t + phase_phi)   + B_phi   * np.sin(i*t + phase_phi)
 
 
-    #atheta = [(v + pi) % tau for v in theta]
-    #aphi = [v - pi for v in phi]
-    #x = r * np.sin(phi) * np.cos(theta)
-    #ax = r * np.sin(aphi) * np.cos(atheta)
-    #y = r * np.sin(phi) * np.sin(theta)
-    #ay = r * np.sin(aphi) * np.sin(atheta)
-    #z = r * np.cos(phi)
-    #az = r * np.cos(aphi)
-    #out = {
-    #  "theta":theta,
-    #  "atheta":atheta,
-    #  "phi":phi,
-    #  "aphi":aphi,
-    #  "x":x,
-    #  "ax":ax,
-    #  "y":y,
-    #  "ay":ay,
-    #  "z":z,
-    #  "az":az
-    #}
-    #atheta = [antipode(v) for v in theta]
-    #aphi = [antipode(v) for v in phi]
-    #out_theta = periodic_array(theta)
-    #out_phi = periodic_array(phi)
     return theta, phi
 
-def rolltranslation(theta, phi, i, o, p, R):
+def rolltranslation(r, theta, phi, i, o, p):
     n = len(theta)
     prev_i = i-1 if i>0 else -1
-    A = direction(R,theta[prev_i], phi[prev_i])
-    B = direction(R,theta[i],   phi[i])
+    A = s2_to_r3(r,theta[prev_i], phi[prev_i]) if i > 0 else np.array([0,0,-R])
+    B = s2_to_r3(r,theta[i],phi[i])
     axis_body = normalize(np.cross(A, B))
     angle = np.arccos(np.clip(np.dot(A, B), -1.0, 1.0))
     o_inc = quat_from_axis_angle(axis_body, angle)
     o_new = quat_mult(o, o_inc)
-    axis_world = quat_rotate(o, axis_body)[1:]   # rotation axis in world frame
+    axis_world = quat_rotate(o, axis_body)[1:]
     d = np.array([0.0, 0.0, -1.0])
     move_dir = np.cross(np.asarray(axis_world), d)
     norm_dir = np.linalg.norm(move_dir)
@@ -102,7 +77,7 @@ def rolltranslation(theta, phi, i, o, p, R):
         disp = np.zeros(3)
     else:
         move_dir = move_dir / norm_dir
-        disp = (R * angle) * move_dir
+        disp = (r * angle) * move_dir
     p_new = p + disp
     return p_new, o_new
 
@@ -124,6 +99,16 @@ def make_closed(pts):
     return corrected
 
 
+def boundaryless_disc(z: complex):
+  if abs(z) <= 1: return np.array([z.real,z.imag,0.0])
+  else:
+    z1 = (-1)/np.conj(z)
+    return np.array([z1.real,z1.imag,0.0])
+
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -141,12 +126,14 @@ if __name__ == "__main__":
     n = len(theta)
     pts = []
     orients = []
-    for i in range(n):
-      Di,Oi = rolltranslation(theta,phi,i,last_o,last_p,r)
-      pts.append(Di)
-      orients.append(Oi)
-      last_p = Di
-      last_o = Oi
+    for i in range(1,n):
+      p,o = rolltranslation(theta,phi,i,last_o,last_p,r)
+      #print(p)
+      z = complex(p[0],p[1])
+      pts.append(boundaryless_disc(z))
+      orients.append(o)
+      last_p = p
+      last_o = o
     return pts,orients
 
 
@@ -157,24 +144,36 @@ if __name__ == "__main__":
 
 
   n,r = 360,0.1
-  theta,phi = random_closed_sphere_curve(n=n,seed=36,k=4,r=r) # sphere curve
+  ang = np.linspace(0,tau,n)
+  theta,phi = random_closed_sphere_curve(n=n,seed=16,k=4,r=r) # sphere curve
+  circle = [np.array([cos(a),sin(a)]) for a in ang]
+
+  #print(theta[0],phi[0])
+  #print(theta[-1],phi[0])
   #sx = r * np.sin(phi) * np.cos(theta)
   #sy = r * np.sin(phi) * np.sin(theta)
   #sz = r * np.cos(phi)
 
   pts,orients = construct_disc_curve(theta,phi,r)
-  pts2 = [np.array([-p[0],-p[1],0.0]) for p in pts]
+  #pts2 = [np.array([p[0],-p[1],0.0]) for p in non_dup_reverse_array(pts)]
+  #pts3 = [np.array([-p[0],p[1],0.0]) for p in non_dup_reverse_array(pts)]
+  #pts4 = [np.array([-p[0],-p[1],0.0]) for p in non_dup_reverse_array(pts)]
   #disc_curve = make_closed(pts)
   xs1,ys1,zs1 = zip(*pts)
-  xs2,ys2,zs2 = zip(*pts2)
+  cx,cy = zip(*circle)
+  #xs2,ys2,zs2 = zip(*pts2)
+  #xs3,ys3,zs3 = zip(*pts3)
+  #xs4,ys4,zs4 = zip(*pts4)
   fig,ax1 = plt.subplots()
   #ax1 = fig.add_subplot(121, projection='2d')
-  ax1.plot(xs1, ys1, 'b-', linewidth=1)
-  ax1.plot(xs2, ys2, 'b-', linewidth=1)
+  ax1.plot(xs1, ys1,'b-',linewidth=0.3)
+  ax1.plot(cx,cy,'b-',linewidth=0.3)
+  #ax1.plot(xs2, ys2,'b-',linewidth=1)
+  #ax1.plot(xs3, ys3,'b-',linewidth=1)
+  #ax1.plot(xs4, ys4,'b-',linewidth=1)
   ax1.set_aspect('equal')
   #ax2 = fig.add_subplot(122,projection="3d")
   #ax2.plot(sx,sy,sz,'-b',linewidth=1)
-
   plt.show()
 
 

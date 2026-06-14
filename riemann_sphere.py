@@ -42,20 +42,20 @@ class riemann_sphere_coord:
   def __init__(self,theta:float,phi:float,spart:(int,int,int)):
     assert spart in sparts, "not valid sphere part argument"
     self._spart = spart
-    self._theta = radians(theta) % right_angle
-    self._phi = radians(phi) % right_angle
+    self._theta = np.radians(theta) % right_angle
+    self._phi = np.radians(phi) % right_angle
     self._pr = cos(self._phi)
     self._x = self._pr * cos(self._theta)
     self._y = self._pr * sin(self._theta)
-    self._z = sin(self._phi)
+    self._z = np.sin(self._phi)
 
   @staticmethod
   def disc_point_constructor(p):
     x,y = p
     zeta=complex(x,y)
     r=abs(zeta)
-    theta=atan2(y,x)
-    phi=acos(r)
+    theta=np.arctan2(y,x)
+    phi=np.arccos(r)
     return riemann_sphere_coord(theta,phi)
 
   @property
@@ -72,20 +72,28 @@ class riemann_sphere_coord:
 
   @theta.setter
   def theta(self,val:float):
-    self._theta = radians(val) % right_angle
-    self._x = self._pr * cos(self._theta)
-    self._y = self._pr * sin(self._theta)
+    self._theta = np.radians(val) % right_angle
+    self._x = self._pr * np.cos(self._theta)
+    self._y = self._pr * np.sin(self._theta)
 
   @property
   def phi(self): return self._phi
 
   @phi.setter
   def phi(self,val:float):
-    self._phi = radians(val) % right_angle
-    self._pr = cos(self._phi)
-    self._x = self._pr * cos(self._theta)
-    self._y = self._pr * sin(self._theta)
-    self._z = sin(self._phi)
+    self._phi = np.radians(val) % right_angle
+    self._pr = np.cos(self._phi)
+    self._x = self._pr * np.cos(self._theta)
+    self._y = self._pr * np.sin(self._theta)
+    self._z = np.sin(self._phi)
+
+  @property
+  def spart(self): return self._spart
+
+  @spart.setter
+  def spart(self,val:(int,int,int)):
+    assert spart in sparts, "not valid sphere part argument"
+    self._spart = val
 
   @property
   def x(self): return self._x * self._spart[0]
