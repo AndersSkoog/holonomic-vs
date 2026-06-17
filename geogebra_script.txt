@@ -1,0 +1,198 @@
+fov = sin(pi/5)
+gam = acos(4/5)
+lambda = tan(gam/2)
+
+O=(0,0,0)
+N=(0,0,1)
+sphere=Klot(O,1)
+
+r_1 = Glidare(0,1,0.01)
+a_1 = Glidare(0,2pi,2pi/360)
+r_2 = Glidare(0,1,0.01)
+a_2 = Glidare(0,2pi,2pi/360)
+
+# --- disc samples ---
+px_1 = r_1*cos(a_1)
+py_1 = r_1*sin(a_1)
+z_1 = px_1 + py_1*i
+m_1 = abs(z_1)^2
+
+px_2 = r_2*cos(a_2)
+py_2 = r_2*sin(a_2)
+z_2 = px_2 + py_2*i
+m_2 = abs(z_2)^2
+
+# --- field-of-view scaling ---
+z_2s = lambda * (px_2 + py_2*i)
+m_2s = abs(z_2s)^2
+
+# --- Möbius frame from S_1 ---
+a = 1 / sqrt(1 + m_1)
+b = z_1 / sqrt(1 + m_1)
+c = -conj(z_1) / sqrt(1 + m_1)
+d = a
+
+# --- transform scaled point ---
+z_3 = ((a*z_2s)+b)/((c*z_2s)+d)
+m_3 = abs(z_3)^2
+
+
+S_1 = Punkt({
+ (2*realDel(z_1))/(1+m_1),
+ (2*imaginärDel(z_1))/(1+m_1),
+ (1-m_1)/(1+m_1)
+})
+
+S_2 = Punkt({
+ (2*realDel(z_2))/(1+m_2),
+ (2*imaginärDel(z_2))/(1+m_2),
+ (1-m_2)/(1+m_2)
+})
+
+S_2s = Punkt({
+ (2*realDel(z_2s))/(1+m_2s),
+ (2*imaginärDel(z_2s))/(1+m_2s),
+ (1-m_2s)/(1+m_2s)
+})
+
+S_3 = Punkt({
+ (2*realDel(z_3))/(1+m_3),
+ (2*imaginärDel(z_3))/(1+m_3),
+ (1-m_3)/(1+m_3)
+})
+
+C = S_1 - (S_1/5)
+Cap=Circle(C,fov,Segment(O,S_1))
+
+
+import numpy as np
+from constants import MIN_VAL
+
+fov = np.sin(np.pi/5)
+gam = np.arccos(4/5)
+cap_scale = np.tan(gam/2)
+
+def cap_circle(radius, n=360):
+  t = np.linspace(0, 2*np.pi, n)
+  radius * np.exp(1j * t)
+
+def to_complex(point_list,index):
+  x,y = point_list[index][0],point_list[index][1]
+  return complex(x,y)
+
+def inv_stereographic_proj(v:complex):
+  m = abs(v)**2
+  x = (2*v.real)/(1+m)
+  y = (2*v.imag)/(1+m)
+  z = (1-m)/(1+m)
+  return np.array([x,y,z])
+
+def holonomic_view(contact_curve,sel_index):
+  z_sel = to_complex(contact_curve,sel_index)
+  m_sel = abs(z_sel)**2
+  # --- Möbius frame from z_sel ---
+  a = 1 / np.sqrt(1 + m_sel)
+  b = z_sel / np.sqrt(1 + m_sel)
+  c = -np.conjugate(z_sel) / np.sqrt(1 + m_sel)
+  d = a
+  view_points = []
+  sphere_point = inv_stereographic_proj(z_sel)
+  persp_point = sphere_point * 2
+  z_cap = [(a*z + b)/(c*z + d) for z in cap_circle(fov)]
+  sphere_cap_circle = [inv_stereographic_proj(z) for z in z_cap]
+
+  for p in contact_curve:
+    z_scaled = cap_scale * complex(p[0],p[1])
+    m_scaled = abs(z_scaled)**2
+    z_trans = ((a*z_scaled)+b)/((c*z_scaled)+d)
+    s_trans = inv_stereographic_proj(z_trans)
+    view_points.append(s_trans)
+
+  return {"persp_point":persp_point,"view_points":view_points,"sphere_cap_circle":sphere_cap_circle,"sphere_point":sphere_point}
+
+
+
+
+
+def sphere_cap_circle(sp, r=fov, n_samples=360):
+    sp = np.asarray(sp)
+    # fixed normal (this is your "direction vector")
+    n = sp / np.linalg.norm(sp)
+
+    # choose a stable reference axis
+    ref = np.array([1.0, 0.0, 0.0])
+    if abs(np.dot(ref, n)) > (1 - MIN_VAL):
+      ref = np.array([0.0, 1.0, 0.0])
+
+    u = np.cross(n, ref) / np.linalg.norm(np.cross(n,ref))
+    v = np.cross(n, u)
+    c = sp - (sp/5)
+    ts = np.linspace(0, 2*np.pi, n_samples)
+    return [c + r * (u*np.cos(t) + v*np.sin(t)) for t in ts]
+
+
+
+
+import numpy as np
+from constants import MIN_VAL
+
+fov = np.sin(np.pi/5)
+gam = np.arccos(4/5)
+cap_scale = np.tan(gam/2)
+
+
+def cap_circle(radius, n=360):
+  t = np.linspace(0, 2*np.pi, n)
+  return radius * np.exp(1j * t)
+
+
+def to_complex(point_list, index):
+  x, y = point_list[index][0], point_list[index][1]
+  return complex(x, y)
+
+
+def inv_stereographic_proj(v: complex):
+  m = abs(v)**2
+  x = (2*v.real)/(1+m)
+  y = (2*v.imag)/(1+m)
+  z = (1-m)/(1+m)
+  return np.array([x,y,z])
+
+
+def holonomic_view(contact_curve, sel_index):
+  z_sel = to_complex(contact_curve, sel_index)
+  m_sel = abs(z_sel)**2
+
+  a = 1 / np.sqrt(1 + m_sel)
+  b = z_sel / np.sqrt(1 + m_sel)
+  c = -np.conjugate(z_sel) / np.sqrt(1 + m_sel)
+  d = a
+
+  sphere_point = inv_stereographic_proj(z_sel)
+  persp_point = sphere_point * 2
+
+  # Möbius-transformed cap
+  z_cap = [(a*z + b)/(c*z + d) for z in cap_circle(fov)]
+  sphere_cap_circle = [inv_stereographic_proj(z) for z in z_cap]
+
+  view_points = []
+  for p in contact_curve:
+    z_scaled = cap_scale * complex(p[0], p[1])
+    z_trans = (a*z_scaled + b) / (c*z_scaled + d)
+    view_points.append(inv_stereographic_proj(z_trans))
+
+  return {
+    "persp_point": persp_point,
+    "view_points": view_points,
+    "sphere_cap_circle": sphere_cap_circle,
+    "sphere_point": sphere_point
+  }
+
+
+
+
+
+
+
+
+
