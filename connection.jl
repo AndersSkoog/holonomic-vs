@@ -82,9 +82,7 @@ end
 
 #this is a heavy computation which should only run once for a chosen sphere curve,
 #perhaps can be optimized by making the sphere curve fully evaluated during compile time.
-#perhaps output can be stored in a file so that we dont have to run it each time we adjustments in the code base.
-#output is fully derived from a chosed closed sphere curve,
-#no external coeficents or real time parameters is in use here.
+#perhaps output can be stored in a file so that we dont have to run it each time we adjustments
 function roll_connection(sphere_curve::Array{S2})
     prev_contact = 0+0im
     prev_frame_SO3 = init_roll_frame_SO3(sphere_curve)
